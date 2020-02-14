@@ -1,0 +1,139 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <title>Jonathan Simmonds | Blog and Portfolio</title>
+  <link href="../style.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+<div class="sticky_footer_pre">
+  <div class="header_wrapper">
+    <div class="header">
+      <h1 id="pageid">Design</h1>
+      <h1 id="title1">Jonathan Simmonds</h1>
+      <h1 id="title2">Blog and Portfolio</h1>
+    </div>
+  </div>
+  <div class="body_wrapper">
+    <div class="nav">
+      <a href="../index.html"             class="nav">Home</a> / 
+      <a href="../profile/index.html"     class="nav">Profile</a> / 
+      <a href="../programming/index.html" class="nav">Programming</a> / 
+      <a href="../woodworking/index.html" class="nav">Woodworking</a> / 
+      <a href="index.html"        class="current nav">Design</a> / 
+      <a href="../blog/index.php"         class="nav">Blog</a>
+    </div>
+    <div class="body">
+      <h1 class="first">'Primitives' Short: Deconstruction</h1>
+      On this page I break down the individual items used in the 'Primitives'
+      short, along with details of their construction.
+      
+      <h1>The Set</h1>
+      <img class="full_width" src="images/primitives_set.jpg"/>
+      <p>
+        The set is designed to look like the interior of an ageing shed. The
+        wooden boards making up the walls, roof and floor are all simple cuboids
+        which have been (dis)placed by hand. Ideally I would have liked to add
+        displacement maps to these to make them look slightly more beaten up and
+        less perfect, but I was able to texture them to appear antiquated. Five
+        different diffuse maps are used for the boards making up the walls and
+        ceiling to avoid obvious repetition.
+      </p>
+      <p>
+        The workbench was one of the more challenging models to make as I knew
+        it would feature in numerous close-ups from different angles. I wanted
+        to give it an old and beaten-up look, something I achieved using Maya's
+        sculpting tool which, while not perfect (especially around angular
+        edges) and quite slow to work with, did a good job of achieving the
+        desired effect. This effect was continued to both legs (the thicker
+        one and the thinner legs which are all the same model, just rotated
+        different amounts). In order to texture the table I baked out a
+        displacement map relative to the original cuboid shape, giving a mask
+        of the areas that had been weathered away. This was used to make the
+        exposed wood a different colour and texture. An AO map was also baked
+        out to give an idea of where grime would collect on the surface; taking
+        special care to make the points the legs connected look realistic.
+        Various paint splatters and dust markings were finally added to give
+        the table some history.
+      </p>
+      
+      <div class="column_left">
+        <h1 class="column">Butterfly</h1>
+        <img class="full_width" src="images/primitives_butterfly.jpg"/>
+        <p>
+          The butterfly, which acts as the initiator for the story arc in the
+          short, was modelled with NURBS to create a complex and flexible wing
+          shape. The central body (which needed to be little more than a
+          cylinder since it was never seen in closeup) had a small amount of fur
+          applied to it to break up the otherwise unnaturally clean lines. The
+          animation rig for the butterfly was one of the most complex made for
+          the short in order to achieve a realistic flight motion: ensuring the
+          different parts of the butterfly's wings moved correctly. Sadly, while
+          the flapping animation was near perfect, the actual movement the
+          butterfly executed was not as realistic as I would have liked.
+        </p>
+      </div>
+      <div class="column_right">
+        <h1 class="column">Caliper</h1>
+        <img class="full_width" src="images/primitives_caliper.jpg" />
+        <p>
+          Based on a pair of medical calipers (probably one of the more tenuous
+          items to naturally occur in a garden shed), the calipers act as the
+          creature's ribs and are variously resized to appear anatomically correct.
+        </p>
+      </div>
+      
+      <div class="column_left">
+        <h1 class="column">Can</h1>
+        <img class="full_width" src="images/primitives_can.jpg" />
+        <p></p>
+      </div>
+      <div class="column_right">
+        <h1 class="column">Lamp</h1>
+        <img class="full_width" src="images/primitives_lamp.jpg" />
+        <p></p>
+      </div>
+      
+      <div class="column_left">
+        <h1 class="column">Nuts and Bolts</h1>
+        <img class="full_width" src="images/primitives_nuts_bolts.jpg" />
+        <p></p>
+      </div>
+      <div class="column_right">
+        <h1 class="column">Penknife</h1>
+        <img class="full_width" src="images/primitives_penknife.jpg" />
+        <p></p>
+      </div>
+      
+      <div class="column_left">
+        <h1 class="column">Toolbox</h1>
+        <img class="full_width" src="images/primitives_toolbox.jpg" />
+        <p></p>
+      </div>
+      <div class="column_right">
+        <h1 class="column">Torch</h1>
+        <img class="full_width" src="images/primitives_torch.jpg" />
+        <p></p>
+      </div>
+      
+      <div class="column_left">
+        <h1 class="column">Trowel</h1>
+        <img class="full_width" src="images/primitives_trowel.jpg" />
+        <p></p>
+      </div>
+
+    </div>
+  </div>
+  <div class="sticky_footer_spacer"></div>
+</div>
+<div class="sticky_footer_content">
+  This website and all content contained upon it are copyright &copy; Jonathan
+  Simmonds 2013-2020, all rights reserved.<br/>
+  No part of the website or its content may be reproduced without expressed
+  permission.
+</div>
+</body>
+
+</html>
