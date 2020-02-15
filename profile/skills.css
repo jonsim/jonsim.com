@@ -1,0 +1,49 @@
+table.skills
+{
+    margin: 1em 0;
+    border-collapse: collapse;
+}
+table.skills,
+table.skills > tbody > tr,
+table.skills > tbody > tr > th,
+table.skills > tbody > tr > td
+{
+    padding: 4px;
+}
+table.skills > tbody > tr > td.basic,
+table.skills > tbody > tr > td.intermediate,
+table.skills > tbody > tr > td.strong,
+table.skills > tbody > tr > td.expert
+{
+    border: 0;
+    padding: 0;
+}
+
+.basic::before, .intermediate::before, .strong::before, .expert::before
+{
+    display: inline-block;
+    text-align: center;
+    line-height: 2em;
+    width: 8em;
+    margin: 0 .4em;
+}
+.basic::before
+{
+    background-color: #88ff55;
+    content: "Basic"
+}
+.intermediate::before
+{
+    background-color: #55aaff;
+    content: "Intermediate"
+}
+.strong::before
+{
+    background-color: #bb55ff;
+    content: "Strong"
+}
+.expert::before
+{
+    background-color: #ff7733;
+    content: "Expert"
+}
