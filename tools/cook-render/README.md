@@ -1,48 +1,63 @@
 # cook-render
 
-A simple Python command-line application to generate HTML recipe files from cooklang `.cook` files.
+A simple Python command-line application to generate a static HTML recipe from a cooklang `.cook` file.
 
-## Set up the project
+## Usage
+
+Install [CookCLI](https://github.com/cooklang/CookCLI).
+
+Pipe the output of `cook recipe` into `cook-render`:
+
+```sh
+cook recipe -f json tests/examples/pancakes.cook | uv run cook-render -o pancakes.html
+```
+
+The `-o` argument sets the output file. Defaults to `-`, meaning standard output.
+
+The `-i` argument sets the input file. Defaults to `-`, meaning standard input.
+
+
+## Contributing
+
+### Set up the project
 
 This project uses [uv](https://docs.astral.sh/uv/) for package management and dependency resolution.
 
 Install the application and its development dependencies:
 
-```console
+```sh
 uv sync --group dev
+```
+
+Install the pre-commit hooks:
+
+```sh
+uv run pre-commit install
 ```
 
 Run the command:
 
-```console
+```sh
 uv run cook-render
 ```
 
-## Run the tests
+### Run the tests
 
 The unit tests use Python's standard `unittest` framework:
 
-```console
+```sh
 uv run python -m unittest discover -s tests
 ```
 
 Run the same tests with coverage and print the missing lines:
 
-```console
+```sh
 uv run coverage run -m unittest discover -s tests
 uv run coverage report
 ```
 
-## Run the checks
+You can also manually run the commit checks at any time:
 
-Install the Git hook once after cloning the project:
-
-```console
-uv run pre-commit install
-```
-
-Run every check over the repository whenever needed:
-
-```console
+```sh
 uv run pre-commit run --all-files
 ```
