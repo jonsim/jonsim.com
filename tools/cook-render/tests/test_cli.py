@@ -48,7 +48,17 @@ class CLITests(unittest.TestCase):
         self.assertTrue(index_html.exists())
         self.assertTrue(ing_index_html.exists())
         self.assertIn('<!DOCTYPE html>', simple_html.read_text(encoding='utf-8'))
+        self.assertIn(
+            'href="index.html">Contents</a>', simple_html.read_text(encoding='utf-8')
+        )
         self.assertIn('<h2>Dummy</h2>', cake_html.read_text(encoding='utf-8'))
+        self.assertIn(
+            'href="../index.html">Contents</a>', cake_html.read_text(encoding='utf-8')
+        )
+        self.assertIn(
+            'href="../index_by_ingredient.html">Ingredient Index</a>',
+            cake_html.read_text(encoding='utf-8'),
+        )
         self.assertIn(
             '<a class="recipe-row" href="simple.html">',
             index_html.read_text(encoding='utf-8'),
@@ -101,7 +111,7 @@ class CLITests(unittest.TestCase):
 
         pancakes_content = (self.out_dir / 'pancakes.html').read_text(encoding='utf-8')
         self.assertIn('<h2>Pancakes</h2>', pancakes_content)
-        self.assertIn('<span class="name">flour</span>', pancakes_content)
+        self.assertIn('<span class="name">Flour</span>', pancakes_content)
 
         index_content = (self.out_dir / 'index.html').read_text(encoding='utf-8')
         self.assertIn('<h1>Recipes</h1>', index_content)

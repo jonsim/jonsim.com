@@ -89,10 +89,24 @@ class RenderRecipeTests(unittest.TestCase):
         self.assertIn('<dd>breakfast, quick</dd>', rendered)
         self.assertIn('<div class="recipe-top">', rendered)
         self.assertIn(
-            '<span class="name">flour</span><span class="qty">200 g</span>', rendered
+            '<span class="name">Flour</span><span class="qty">200 g</span>', rendered
         )
         self.assertIn('<span class="cook">bowl</span>', rendered)
         self.assertIn('<span class="time">2 minutes</span>', rendered)
+
+    def test_renders_with_root_path(self):
+        rendered = cook_render.render_recipe(pancakes_recipe(), root_path='../')
+        self.assertIn(
+            '<a class="back" href="../index.html">← Back to contents</a>', rendered
+        )
+        self.assertIn('<a class="nav-link" href="../index.html">Contents</a>', rendered)
+        self.assertIn(
+            '<a class="nav-link" href="../index_by_ingredient.html">Ingredient Index</a>',
+            rendered,
+        )
+        self.assertIn(
+            '<a class="nav-link" href="../index_by_time.html">Time Index</a>', rendered
+        )
 
     def test_renders_notes_and_named_sections(self):
         recipe = pancakes_recipe()

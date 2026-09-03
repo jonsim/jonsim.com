@@ -283,8 +283,15 @@ def render_method(recipe):
     return ''.join(parts)
 
 
-def render_recipe(recipe):
+def render_recipe(recipe, root_path: str | int = ''):
     """Render one CookCLI JSON recipe as a complete HTML document."""
+    if isinstance(root_path, int):
+        root_prefix = '../' * root_path
+    else:
+        root_prefix = str(root_path)
+        if root_prefix and not root_prefix.endswith('/'):
+            root_prefix += '/'
+
     metadata = _metadata_map(recipe)
     title = metadata.get('title') or 'Recipe'
     description = metadata.get('description')
@@ -309,11 +316,11 @@ def render_recipe(recipe):
         '<body>\n'
         '  <div class="book">\n'
         '    <header class="topbar">\n'
-        '      <a class="back" href="index.html">← Back to contents</a>\n'
+        f'      <a class="back" href="{root_prefix}index.html">← Back to contents</a>\n'
         '      <nav>\n'
-        '        <a class="nav-link" href="index.html">Contents</a>\n'
-        '        <a class="nav-link" href="index_by_ingredient.html">Ingredient Index</a>\n'
-        '        <a class="nav-link" href="index_by_time.html">Time Index</a>\n'
+        f'        <a class="nav-link" href="{root_prefix}index.html">Contents</a>\n'
+        f'        <a class="nav-link" href="{root_prefix}index_by_ingredient.html">Ingredient Index</a>\n'
+        f'        <a class="nav-link" href="{root_prefix}index_by_time.html">Time Index</a>\n'
         '      </nav>\n'
         '    </header>\n'
         '    <main>\n'

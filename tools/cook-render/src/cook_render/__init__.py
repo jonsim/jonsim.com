@@ -85,8 +85,10 @@ def main(argv=None):
             has_errors = True
             continue
 
-        html_content = render_recipe(recipe)
         relative_path = cook_file.relative_to(base_path)
+        depth = len(relative_path.parent.parts)
+        root_path = '../' * depth
+        html_content = render_recipe(recipe, root_path=root_path)
         target_path = output_dir / relative_path.with_suffix('.html')
         target_path.parent.mkdir(parents=True, exist_ok=True)
         target_path.write_text(html_content, encoding='utf-8')
