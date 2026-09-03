@@ -156,6 +156,7 @@ def render_requirements(recipe):
         if not _is_definition(ingredient, ingredient=True):
             continue
         name = ingredient.get('alias') or ingredient.get('name', '')
+        name = name.title()
         quantity = _grouped_quantity(ingredient, ingredients)
         quantity_html = (
             f'<span class="qty">{_escape(quantity)}</span>' if quantity else ''
@@ -178,6 +179,7 @@ def render_requirements(recipe):
         if not _is_definition(cookware):
             continue
         name = cookware.get('alias') or cookware.get('name', '')
+        name = name.title()
         quantity = _format_quantity(cookware.get('quantity'))
         quantity_html = (
             f'<span class="qty">{_escape(quantity)}</span>' if quantity else ''
