@@ -79,16 +79,46 @@ class RenderRecipeTests(unittest.TestCase):
     def test_renders_cookcli_json(self):
         rendered = cook_render.render_recipe(pancakes_recipe())
 
-        self.assertTrue(rendered.startswith('<!doctype html>'))
+        self.assertTrue(rendered.startswith('<!DOCTYPE html>'))
         self.assertIn('<title>Swedish Chef&#39;s Pancakes</title>', rendered)
         self.assertIn('family=Goudy+Bookletter+1911', rendered)
+        self.assertIn('family=Archivo', rendered)
         self.assertNotIn('From the kitchen', rendered)
         self.assertIn('Breakfast for Beaker &amp; Bunsen', rendered)
-        self.assertIn('<dt>tags</dt><dd>breakfast, quick</dd>', rendered)
-        self.assertIn('<div class="recipe-notes">', rendered)
-        self.assertIn('<span>flour</span><span class="quantity">200 g</span>', rendered)
-        self.assertIn('<span class="cookware">bowl</span>', rendered)
-        self.assertIn('<span class="timer">2 minutes</span>', rendered)
+        self.assertIn('<dt>tags</dt>', rendered)
+        self.assertIn('<dd>breakfast, quick</dd>', rendered)
+        self.assertIn('<div class="recipe-top">', rendered)
+        self.assertIn(
+            '<span class="name">flour</span><span class="qty">200 g</span>', rendered
+        )
+        self.assertIn('<span class="cook">bowl</span>', rendered)
+        self.assertIn('<span class="time">2 minutes</span>', rendered)
+
+    def test_renders_notes_and_named_sections(self):
+        recipe = pancakes_recipe()
+        recipe['sections'] = [
+            {
+                'name': 'Batter',
+                'content': [
+                    {
+                        'type': 'step',
+                        'value': {
+                            'number': 1,
+                            'items': [{'type': 'text', 'value': 'Stir gently.'}],
+                        },
+                    },
+                    {
+                        'type': 'text',
+                        'value': 'Note: Do not overmix.',
+                    },
+                ],
+            }
+        ]
+
+        rendered = cook_render.render_recipe(recipe)
+
+        self.assertIn('<h4>Batter</h4>', rendered)
+        self.assertIn('<div class="note"><b>Note.</b> Do not overmix.</div>', rendered)
 
     def test_escapes_recipe_text(self):
         recipe = pancakes_recipe()
