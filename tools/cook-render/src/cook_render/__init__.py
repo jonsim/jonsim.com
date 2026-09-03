@@ -6,7 +6,11 @@ import subprocess
 import sys
 from pathlib import Path
 
-from cook_render.render import render_index, render_recipe
+from cook_render.render import (
+    render_index,
+    render_index_by_ingredient,
+    render_recipe,
+)
 
 
 def load_recipe(cook_path: Path) -> dict:
@@ -98,5 +102,10 @@ def main(argv=None):
     output_dir.mkdir(parents=True, exist_ok=True)
     index_html = render_index(recipe_items)
     (output_dir / 'index.html').write_text(index_html, encoding='utf-8')
+
+    ingredient_index_html = render_index_by_ingredient(recipe_items)
+    (output_dir / 'index_by_ingredient.html').write_text(
+        ingredient_index_html, encoding='utf-8'
+    )
 
     return 1 if has_errors else 0

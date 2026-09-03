@@ -220,5 +220,64 @@ class RenderIndexTests(unittest.TestCase):
         self.assertNotIn('<div class="meal-group">', rendered)
 
 
+class RenderIndexByIngredientTests(unittest.TestCase):
+    def test_renders_ingredient_index_page(self):
+        recipes = [
+            {
+                'recipe': pancakes_recipe(),
+                'href': 'pancakes.html',
+            },
+            {
+                'recipe': {
+                    'metadata': {
+                        'map': {
+                            'title': 'Burnt Basque Cheesecake',
+                        }
+                    },
+                    'ingredients': [
+                        {'name': 'cream cheese'},
+                        {'name': 'eggs'},
+                        {'name': 'caster sugar'},
+                    ],
+                },
+                'href': 'cheesecake.html',
+            },
+        ]
+
+        rendered = cook_render.render_index_by_ingredient(recipes)
+
+        self.assertTrue(rendered.startswith('<!DOCTYPE html>'))
+        self.assertIn('<title>Materia — A Kitchen Manual</title>', rendered)
+        self.assertIn('family=Goudy+Bookletter+1911', rendered)
+        self.assertIn('family=Archivo', rendered)
+        self.assertIn('<div class="book">', rendered)
+        self.assertIn(
+            '<a class="nav-link is-active" href="index_by_ingredient.html">Ingredient Index</a>',
+            rendered,
+        )
+        self.assertIn('<h1>Index by Ingredient</h1>', rendered)
+        self.assertIn('<ul class="ingredient-index">', rendered)
+
+        # Terms formatted with capitalize() and sorted
+        self.assertIn('<span class="term">Caster sugar</span>', rendered)
+        self.assertIn('<span class="term">Cream cheese</span>', rendered)
+        self.assertIn('<span class="term">Eggs</span>', rendered)
+        self.assertIn('<span class="term">Flour</span>', rendered)
+
+        # Links to recipes
+        self.assertIn(
+            '<p><a href="cheesecake.html">Burnt Basque Cheesecake</a></p>', rendered
+        )
+        self.assertIn(
+            '<p><a href="pancakes.html">Swedish Chef&#39;s Pancakes</a></p>', rendered
+        )
+
+    def test_renders_empty_ingredient_index_page(self):
+        rendered = cook_render.render_index_by_ingredient([])
+        self.assertTrue(rendered.startswith('<!DOCTYPE html>'))
+        self.assertIn('<h1>Index by Ingredient</h1>', rendered)
+        self.assertIn('<ul class="ingredient-index">\n        </ul>', rendered)
+
+
 if __name__ == '__main__':
     unittest.main()

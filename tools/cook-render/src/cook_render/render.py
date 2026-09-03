@@ -532,3 +532,98 @@ def render_index(
         '</body>\n\n'
         '</html>\n'
     )
+
+
+def render_index_by_ingredient(
+    recipe_items: list[dict], title: str = 'Materia — A Kitchen Manual'
+) -> str:
+    """Render an index page listing all recipes grouped by ingredient."""
+    ingredient_map: dict[str, dict] = {}
+
+    for item in recipe_items:
+        recipe = item.get('recipe', {})
+        metadata = _metadata_map(recipe)
+        recipe_title = metadata.get('title') or item.get('href', 'Recipe')
+        href = item.get('href', '#')
+
+        seen_for_recipe = set()
+        for ing in recipe.get('ingredients', []):
+            raw_name = (ing.get('name') or ing.get('alias') or '').strip()
+            if not raw_name:
+                continue
+            normalized = raw_name.lower()
+            if normalized in seen_for_recipe:
+                continue
+            seen_for_recipe.add(normalized)
+
+            if normalized not in ingredient_map:
+                ingredient_map[normalized] = {
+                    'term': raw_name.capitalize(),
+                    'recipes': [],
+                }
+            ingredient_map[normalized]['recipes'].append(
+                {'title': recipe_title, 'href': href}
+            )
+
+    rows = []
+    for norm_key in sorted(
+        ingredient_map.keys(), key=lambda k: ingredient_map[k]['term'].lower()
+    ):
+        data = ingredient_map[norm_key]
+        term = data['term']
+        sorted_recipes = sorted(data['recipes'], key=lambda r: r['title'].lower())
+
+        refs_html = '\n'.join(
+            f'              <p><a href="{_escape(r["href"])}">{_escape(r["title"])}</a></p>'
+            for r in sorted_recipes
+        )
+
+        rows.append(
+            '          <li>\n'
+            f'            <span class="term">{_escape(term)}</span>\n'
+            '            <span class="refs">\n'
+            f'{refs_html}\n'
+            '            </span>\n'
+            '          </li>'
+        )
+
+    items_body = '\n'.join(rows)
+    if items_body:
+        items_body += '\n'
+
+    return (
+        '<!DOCTYPE html>\n<html lang="en">\n\n<head>\n'
+        '  <meta charset="UTF-8">\n'
+        '  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
+        f'  <title>{_escape(title)}</title>\n'
+        '  <link rel="preconnect" href="https://fonts.googleapis.com">\n'
+        '  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
+        '  <link\n'
+        '    href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Goudy+Bookletter+1911&display=swap"\n'
+        '    rel="stylesheet">\n'
+        f'{_embedded_style()}'
+        '</head>\n\n'
+        '<body>\n'
+        '  <div class="book">\n'
+        '    <header class="topbar">\n'
+        '      <div class="mark">jonsim <span>kitchen manual</span></div>\n'
+        '      <nav>\n'
+        '        <a class="nav-link" href="index.html">Contents</a>\n'
+        '        <a class="nav-link is-active" href="index_by_ingredient.html">Ingredient Index</a>\n'
+        '        <a class="nav-link" href="index_by_time.html">Time Index</a>\n'
+        '      </nav>\n'
+        '    </header>\n'
+        '    <main>\n'
+        '      <section id="ingredient-index">\n'
+        '        <div class="page-intro">\n'
+        '          <h1>Index by Ingredient</h1>\n'
+        '        </div>\n'
+        '        <ul class="ingredient-index">\n'
+        f'{items_body}'
+        '        </ul>\n'
+        '      </section>\n'
+        '    </main>\n'
+        '  </div>\n'
+        '</body>\n\n'
+        '</html>\n'
+    )
