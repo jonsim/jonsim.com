@@ -331,3 +331,204 @@ def render_recipe(recipe):
         '</body>\n\n'
         '</html>\n'
     )
+
+
+COURSE_ORDER = [
+    'Breakfast',
+    'Brunch',
+    'Lunch',
+    'Dinner',
+    'Sides',
+    'Starters',
+    'Dessert',
+    'Baking',
+    'Snacks',
+    'Drinks',
+]
+
+
+def _recipe_group(item: dict) -> str:
+    """Determine the meal group / course for a recipe."""
+    recipe = item.get('recipe', {})
+    metadata = _metadata_map(recipe)
+
+    # 1. Explicit course / meal / category in metadata
+    for key in ('course', 'meal', 'category', 'group'):
+        val = metadata.get(key)
+        if val and isinstance(val, str) and val.strip():
+            return val.strip().title()
+
+    # 2. Check tags
+    tags = metadata.get('tags', [])
+    if isinstance(tags, str):
+        tags = [t.strip() for t in tags.split(',')]
+    elif not isinstance(tags, list):
+        tags = []
+
+    known_courses = {
+        'breakfast': 'Breakfast',
+        'brunch': 'Brunch',
+        'lunch': 'Lunch',
+        'dinner': 'Dinner',
+        'main': 'Dinner',
+        'mains': 'Dinner',
+        'side': 'Sides',
+        'sides': 'Sides',
+        'dessert': 'Dessert',
+        'desserts': 'Dessert',
+        'starter': 'Starters',
+        'starters': 'Starters',
+        'baking': 'Baking',
+        'snack': 'Snacks',
+        'snacks': 'Snacks',
+        'drink': 'Drinks',
+        'drinks': 'Drinks',
+    }
+
+    for tag in tags:
+        tag_lower = str(tag).strip().lower()
+        if tag_lower in known_courses:
+            return known_courses[tag_lower]
+
+    # 3. Relative parent directory name
+    rel_path = item.get('relative_path')
+    if rel_path and rel_path.parent and str(rel_path.parent) != '.':
+        parent_name = rel_path.parent.parts[0]
+        parent_lower = parent_name.lower()
+        if parent_lower in known_courses:
+            return known_courses[parent_lower]
+        return parent_name.replace('-', ' ').replace('_', ' ').title()
+
+    return 'Recipes'
+
+
+def _format_row_meta(metadata: dict) -> str:
+    """Format time and servings metadata for the recipe row."""
+    time = (
+        metadata.get('time')
+        or metadata.get('total_time')
+        or metadata.get('cooking_time')
+    )
+    servings = (
+        metadata.get('servings') or metadata.get('serves') or metadata.get('yield')
+    )
+    if isinstance(servings, list):
+        servings = ', '.join(str(s) for s in servings)
+
+    time_str = str(time).strip() if time else ''
+    servings_str = str(servings).strip() if servings is not None else ''
+    if servings_str and not servings_str.lower().startswith('serve'):
+        servings_str = f'serves {servings_str}'
+
+    if time_str and servings_str:
+        return f'{time_str} — {servings_str}'
+    if time_str:
+        return time_str
+    if servings_str:
+        return servings_str
+    return ''
+
+
+def render_index(
+    recipe_items: list[dict], title: str = 'Materia — A Kitchen Manual'
+) -> str:
+    """Render an index page listing all recipes grouped by meal."""
+    grouped: dict[str, list[dict]] = {}
+    for item in recipe_items:
+        group = _recipe_group(item)
+        grouped.setdefault(group, []).append(item)
+
+    def group_sort_key(name: str):
+        if name in COURSE_ORDER:
+            return (0, COURSE_ORDER.index(name))
+        if name in ('Recipes', 'Other'):
+            return (2, name)
+        return (1, name)
+
+    group_sections = []
+    for group_name in sorted(grouped.keys(), key=group_sort_key):
+        items = grouped[group_name]
+        items = sorted(
+            items,
+            key=lambda it: (
+                _metadata_map(it.get('recipe', {})).get('title') or it.get('href', '')
+            ).lower(),
+        )
+
+        rows = []
+        for it in items:
+            recipe = it.get('recipe', {})
+            metadata = _metadata_map(recipe)
+            recipe_title = metadata.get('title') or it.get('href', 'Recipe')
+            description = metadata.get('description')
+            href = it.get('href', '#')
+            meta_str = _format_row_meta(metadata)
+
+            desc_html = (
+                f'<span class="row-desc">{_escape(description)}</span>'
+                if description
+                else ''
+            )
+            meta_html = (
+                f'<span class="row-meta">{_escape(meta_str)}</span>' if meta_str else ''
+            )
+
+            rows.append(
+                '              <li>'
+                f'<a class="recipe-row" href="{_escape(href)}">'
+                '<span class="row-main">'
+                f'<span class="row-title">{_escape(recipe_title)}</span>'
+                f'{desc_html}'
+                '</span>'
+                f'{meta_html}'
+                '</a>'
+                '</li>'
+            )
+
+        group_sections.append(
+            '          <div class="meal-group">\n'
+            f'            <h2 class="section-heading">{_escape(group_name)}</h2>\n'
+            '            <ol class="recipe-list">\n'
+            + '\n'.join(rows)
+            + '\n            </ol>\n'
+            '          </div>\n'
+        )
+
+    contents_body = ''.join(group_sections)
+
+    return (
+        '<!DOCTYPE html>\n<html lang="en">\n\n<head>\n'
+        '  <meta charset="UTF-8">\n'
+        '  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
+        f'  <title>{_escape(title)}</title>\n'
+        '  <link rel="preconnect" href="https://fonts.googleapis.com">\n'
+        '  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
+        '  <link\n'
+        '    href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Goudy+Bookletter+1911&display=swap"\n'
+        '    rel="stylesheet">\n'
+        f'{_embedded_style()}'
+        '</head>\n\n'
+        '<body>\n'
+        '  <div class="book">\n'
+        '    <header class="topbar">\n'
+        '      <div class="mark">jonsim <span>kitchen manual</span></div>\n'
+        '      <nav>\n'
+        '        <a class="nav-link is-active" href="index.html">Contents</a>\n'
+        '        <a class="nav-link" href="index_by_ingredient.html">Ingredient Index</a>\n'
+        '        <a class="nav-link" href="index_by_time.html">Time Index</a>\n'
+        '      </nav>\n'
+        '    </header>\n'
+        '    <main>\n'
+        '      <section>\n'
+        '        <div class="page-intro">\n'
+        '          <h1>Recipes</h1>\n'
+        '        </div>\n'
+        '        <div class="contents">\n'
+        f'{contents_body}'
+        '        </div>\n'
+        '      </section>\n'
+        '    </main>\n'
+        '  </div>\n'
+        '</body>\n\n'
+        '</html>\n'
+    )

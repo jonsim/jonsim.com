@@ -40,11 +40,21 @@ class CLITests(unittest.TestCase):
 
         simple_html = self.out_dir / 'simple.html'
         cake_html = self.out_dir / 'desserts' / 'cake.html'
+        index_html = self.out_dir / 'index.html'
 
         self.assertTrue(simple_html.exists())
         self.assertTrue(cake_html.exists())
+        self.assertTrue(index_html.exists())
         self.assertIn('<!DOCTYPE html>', simple_html.read_text(encoding='utf-8'))
         self.assertIn('<h2>Dummy</h2>', cake_html.read_text(encoding='utf-8'))
+        self.assertIn(
+            '<a class="recipe-row" href="simple.html">',
+            index_html.read_text(encoding='utf-8'),
+        )
+        self.assertIn(
+            '<a class="recipe-row" href="desserts/cake.html">',
+            index_html.read_text(encoding='utf-8'),
+        )
 
     def test_nonexistent_base_path(self):
         with self.assertRaises(SystemExit):
@@ -78,6 +88,7 @@ class CLITests(unittest.TestCase):
         ret = main(['-b', str(examples_dir), '-o', str(self.out_dir)])
         self.assertEqual(ret, 0)
 
+        self.assertTrue((self.out_dir / 'index.html').exists())
         self.assertTrue((self.out_dir / 'pancakes.html').exists())
         self.assertTrue((self.out_dir / 'tomato-sauce.html').exists())
         self.assertTrue((self.out_dir / 'minimal.html').exists())
@@ -85,6 +96,10 @@ class CLITests(unittest.TestCase):
         pancakes_content = (self.out_dir / 'pancakes.html').read_text(encoding='utf-8')
         self.assertIn('<h2>Pancakes</h2>', pancakes_content)
         self.assertIn('<span class="name">flour</span>', pancakes_content)
+
+        index_content = (self.out_dir / 'index.html').read_text(encoding='utf-8')
+        self.assertIn('<h1>Recipes</h1>', index_content)
+        self.assertIn('<a class="recipe-row" href="pancakes.html">', index_content)
 
 
 if __name__ == '__main__':

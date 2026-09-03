@@ -6,7 +6,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from cook_render.render import render_recipe
+from cook_render.render import render_index, render_recipe
 
 
 def load_recipe(cook_path: Path) -> dict:
@@ -55,6 +55,7 @@ def main(argv=None):
     ]
     cook_files.sort()
 
+    recipe_items = []
     has_errors = False
     for cook_file in cook_files:
         try:
@@ -85,5 +86,17 @@ def main(argv=None):
         target_path = output_dir / relative_path.with_suffix('.html')
         target_path.parent.mkdir(parents=True, exist_ok=True)
         target_path.write_text(html_content, encoding='utf-8')
+
+        recipe_items.append(
+            {
+                'recipe': recipe,
+                'href': target_path.relative_to(output_dir).as_posix(),
+                'relative_path': relative_path,
+            }
+        )
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    index_html = render_index(recipe_items)
+    (output_dir / 'index.html').write_text(index_html, encoding='utf-8')
 
     return 1 if has_errors else 0
