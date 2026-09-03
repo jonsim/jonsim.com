@@ -1,20 +1,20 @@
 # cook-render
 
-A simple Python command-line application to generate a static HTML recipe from a cooklang `.cook` file.
+A simple Python command-line application to generate a static HTML recipe site from cooklang `.cook` files.
 
 ## Usage
 
 Install [CookCLI](https://github.com/cooklang/CookCLI).
 
-Pipe the output of `cook recipe` into `cook-render`:
+Run `cook-render` pointing to your recipes:
 
 ```sh
-cook recipe -f json tests/examples/pancakes.cook | uv run cook-render -o pancakes.html
+uv run cook-render --base-path recipes --output-dir site
 ```
 
-The `-o` argument sets the output file. Defaults to `-`, meaning standard output.
+The `--base-path` / `-b` argument specifies the root directory containing your recipe files (defaults to `.`).
 
-The `-i` argument sets the input file. Defaults to `-`, meaning standard input.
+The `--output-dir` / `-o` argument specifies the path to output the recipe site to (defaults to `site`).
 
 
 ## Contributing

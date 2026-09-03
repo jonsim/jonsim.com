@@ -2,64 +2,88 @@
 
 import argparse
 import json
+import subprocess
 import sys
-from contextlib import contextmanager
 from pathlib import Path
 
 from cook_render.render import render_recipe
 
 
-@contextmanager
-def open_input(path: Path):
-    if path == Path('-'):
-        yield sys.stdin
-    else:
-        with open(path, encoding='utf-8') as f:
-            yield f
-
-
-@contextmanager
-def open_output(path: Path):
-    if path == Path('-'):
-        yield sys.stdout
-    else:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        with open(path, 'w', encoding='utf-8') as f:
-            yield f
+def load_recipe(cook_path: Path) -> dict:
+    """Run `cook recipe -f json` on a .cook file and parse the JSON output."""
+    result = subprocess.run(
+        ['cook', 'recipe', '-f', 'json', str(cook_path)],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return json.loads(result.stdout)
 
 
 def main(argv=None):
-    """Read a JSON recipe from stdin and write its HTML page."""
-    parser = argparse.ArgumentParser(
-        description="Render the JSON output from 'cook recipe -f json' as HTML."
-    )
+    """Find all .cook files in base-path and convert them to HTML in output-dir."""
+    parser = argparse.ArgumentParser(description='Render cooklang recipes as HTML.')
     parser.add_argument(
-        '-i',
-        '--input',
+        '-b',
+        '--base-path',
         type=Path,
-        default='-',
-        help='JSON file to read, or - to read from stdin. Defaults to stdin.',
+        default=Path('.'),
+        help='Root directory containing your recipe files',
     )
     parser.add_argument(
         '-o',
-        '--output',
+        '--output-dir',
         type=Path,
-        default='-',
-        help='HTML file to write, or - to output to stdout. Defaults to stdout.',
+        default=Path('site'),
+        help='Path to output the recipe site to',
     )
     args = parser.parse_args(argv)
 
-    # Open and the input and output files.
-    with open_input(args.input) as input, open_output(args.output) as output:
-        # Parse the recipe.
+    base_path = args.base_path
+    output_dir = args.output_dir
+
+    if not base_path.exists() or not base_path.is_dir():
+        parser.error(f"Base path '{base_path}' is not a directory")
+
+    resolved_output = output_dir.resolve()
+    cook_files = [
+        p
+        for p in base_path.rglob('*.cook')
+        if not (
+            resolved_output.exists() and p.resolve().is_relative_to(resolved_output)
+        )
+    ]
+    cook_files.sort()
+
+    has_errors = False
+    for cook_file in cook_files:
         try:
-            recipe = json.load(input)
-        except json.JSONDecodeError as error:
-            parser.error(f'stdin is not valid JSON: {error}')
-        if not isinstance(recipe, dict):
-            parser.error('stdin must contain one JSON recipe object')
+            recipe = load_recipe(cook_file)
+        except FileNotFoundError:
+            print(
+                "Error: 'cook' command not found. Please install CookCLI.",
+                file=sys.stderr,
+            )
+            return 1
+        except subprocess.CalledProcessError as err:
+            print(
+                f"Error parsing '{cook_file}': {err.stderr.strip()}",
+                file=sys.stderr,
+            )
+            has_errors = True
+            continue
+        except json.JSONDecodeError as err:
+            print(
+                f"Error reading JSON from '{cook_file}': {err}",
+                file=sys.stderr,
+            )
+            has_errors = True
+            continue
 
-        # Render the recipe.
-        output.write(render_recipe(recipe))
+        html_content = render_recipe(recipe)
+        relative_path = cook_file.relative_to(base_path)
+        target_path = output_dir / relative_path.with_suffix('.html')
+        target_path.parent.mkdir(parents=True, exist_ok=True)
+        target_path.write_text(html_content, encoding='utf-8')
 
-    return 0
+    return 1 if has_errors else 0
