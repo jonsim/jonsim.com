@@ -42,10 +42,10 @@ html, body
 }
 
 /* Font setup */
-body
+body, input, textarea
 {
     font-family: Vegur, Vegur_IE, 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    font-size:   11pt; /* ~10.5 pt */
+    font-size:   12pt; /* ~10.5 pt */
 /*    line-height: 1.2em; /* ~14.5 pt */
 }
 
@@ -146,38 +146,11 @@ span.nonjustified
     text-align: left;
 }
 
-div.blogpost
-{
-    background-color: #eee;
-}
-div.blogpost + div.blogpost
-{
-    margin-top: 15px;
-}
-div.blogheader
-{
-    margin: 0 10px;
-    padding: 10px 8px;
-    border-left:  8px solid #FF9B23;
-}
-div.blogcontent
-{
-    padding: 10px;
-}
-
-img.blogcontent
-{
-    display: block;
-    margin: 1em auto;
-    padding: 0;
-    clear: both;
-}
-
 p
 {
     margin: 0;
 }
-p + p, img.blogcontent + p
+p + p, img.post_content + p
 {
     margin-top: 1em;
 }
@@ -212,46 +185,6 @@ h2
 {
     margin:  30px 0 10px 0;
     padding: 5px  0;
-}
-h1.blogtitle, h2.blogdate
-{
-    max-width: none;
-    min-width: none;
-    width:     auto;
-    
-    margin:  0;
-    padding: 0;
-    
-    font-family: Abel;
-    font-style:  normal;
-    font-weight: normal;
-    font-size:   20pt;
-    text-transform: uppercase;
-    color:       #000;
-    
-    border:           none;
-    background-color: transparent;
-    text-shadow:      none;
-}
-h2.blogdate
-{
-    max-width: none;
-    min-width: none;
-    width:     auto;
-    
-    margin:  0;
-    padding: 0;
-    
-    font-family: Abel;
-    font-style:  normal;
-    font-weight: normal;
-    font-size:   12pt;
-    text-transform: uppercase;
-    color:       #999;
-    
-    border:           none;
-    background-color: transparent;
-    text-shadow:      none;
 }
 
 h1#pageid, h1#title1, h1#title2
