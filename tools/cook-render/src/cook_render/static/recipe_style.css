@@ -174,13 +174,28 @@ section {
  * Method
  */
 
-.method-list {
-  list-style: none;
-  margin: 0;
-  padding: 0 25px;
+.method-group {
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: 6px;
+  padding: 0 25px;
+}
+
+.method-group+.method-group {
+  margin-top: 20px;
+}
+
+.method-group h3 {
+  margin: 15px 0 10px;
+  font-size: 20px;
+  letter-spacing: -.03em;
+  font-weight: 500;
+}
+
+.method-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .method-list li {
@@ -230,18 +245,34 @@ section {
   white-space: nowrap
 }
 
+.method-notes p {
+  margin: 0;
+  margin-bottom: 20px;
+  display: flex;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.method-notes p::before {
+  display: flex;
+  padding-right: 20px;
+  content: "NOTE: ";
+  font: 14px var(--mono-font);
+  line-height: 1.65;
+}
 
 
 /*
  * Notes
  */
-.notes {
+.recipe-notes {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 56px
 }
 
-.note-block p {
+.recipe-note-block p {
   margin: 0;
   color: var(--muted);
   font-size: 14px;

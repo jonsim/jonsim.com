@@ -71,7 +71,9 @@
         </div>
 {% if ingredients %}
         <div class="ingredient-group">
-          <h3>Ingredients</h3>
+{% if ingredients.heading %}
+          <h3>{{ ingredients.heading }}</h3>
+{% endif %}
           <ul>
 {% for ingredient in ingredients %}
             <li><span class="qty">{{ ingredient.quantity }}</span><span>{{ ingredient.name }}</span></li>
@@ -96,15 +98,17 @@
           <h2>Method</h2>
         </div>
 {% for section in method_sections %}
+        <div class="method-group">
 {% if section.name %}
-        <h3>{{ section.name }}</h3>
+          <h3>{{ section.name }}</h3>
 {% endif %}
 {% for block in section.blocks %}
 {% if block.type == 'steps' %}
-        <ol class="method-list">
+          <ol class="method-list">
 {% for step in block.steps %}
-          <li>
-            <p>{% for item in step -%}
+            <li>
+              <p>
+{% for item in step -%}
 {%- if item.type == 'text' -%}
 {{ item.value }}
 {%- elif item.type == 'ingredient' -%}
@@ -116,14 +120,18 @@
 {%- elif item.type == 'inlineQuantity' -%}
 <span class="qty-inline">{{ item.value }}</span>
 {%- endif -%}
-{%- endfor %}</p>
-          </li>
+{%- endfor %}
+              </p>
+            </li>
 {% endfor %}
-        </ol>
+          </ol>
 {% else %}
-        <p>{{ block.value }}</p>
+          <div class="method-notes">
+            <p>{{ block.value }}</p>
+          </div>
 {% endif %}
 {% endfor %}
+        </div>
 {% endfor %}
       </div>
     </section>
