@@ -4,6 +4,7 @@ import argparse
 import json
 import subprocess
 import sys
+from importlib import resources
 from pathlib import Path
 
 from cook_render.render import (
@@ -102,6 +103,13 @@ def main(argv=None):
         )
 
     output_dir.mkdir(parents=True, exist_ok=True)
+    recipe_style = (
+        resources.files('cook_render')
+        .joinpath('recipe_style.css')
+        .read_text(encoding='utf-8')
+    )
+    (output_dir / 'recipe_style.css').write_text(recipe_style, encoding='utf-8')
+
     index_html = render_index(recipe_items)
     (output_dir / 'index.html').write_text(index_html, encoding='utf-8')
 

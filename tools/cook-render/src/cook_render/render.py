@@ -2,6 +2,7 @@
 
 import html
 import json
+import re
 from importlib import resources
 
 
@@ -11,6 +12,11 @@ def _embedded_style() -> str:
         resources.files('cook_render').joinpath('style.css').read_text(encoding='utf-8')
     )
     return f'\n<style>\n{style}\n</style>\n'
+
+
+def _template(name: str) -> str:
+    """Load one of the HTML page templates bundled with the renderer."""
+    return resources.files('cook_render').joinpath(name).read_text(encoding='utf-8')
 
 
 def _escape(value):
@@ -123,33 +129,36 @@ def render_metadata(recipe):
     """Render recipe metadata other than the title and description."""
     fields = []
     for key, value in sorted(_metadata_map(recipe).items()):
-        if key in {'title', 'description'}:
+        if key in {'title', 'description', 'image', 'photo'}:
             continue
+        label = 'Serves' if key == 'servings' else key.replace('_', ' ').title()
         if isinstance(value, list):
-            display_value = ', '.join(str(item) for item in value)
+            if key.lower() == 'tags':
+                tags = ''.join(f'<span>{_escape(item)}</span>' for item in value)
+                display_value = f'<dd class="tags">{tags}</dd>'
+            else:
+                display_value = (
+                    f'<dd>{_escape(", ".join(str(item) for item in value))}</dd>'
+                )
         elif isinstance(value, str):
-            display_value = value
+            display_value = f'<dd>{_escape(value)}</dd>'
         else:
-            display_value = json.dumps(value, separators=(',', ':'))
+            value = json.dumps(value, separators=(',', ':'))
+            display_value = f'<dd>{_escape(value)}</dd>'
         fields.append(
-            '              <div>\n'
-            f'                <dt>{_escape(key)}</dt>\n'
-            f'                <dd>{_escape(display_value)}</dd>\n'
-            '              </div>'
+            '        <div>\n'
+            f'          <dt>{_escape(label)}</dt>\n'
+            f'          {display_value}\n'
+            '        </div>'
         )
 
     if not fields:
         return ''
-    return (
-        '            <dl class="metadata">\n'
-        + '\n'.join(fields)
-        + '\n            </dl>\n'
-    )
+    return '      <dl class="metadata">\n' + '\n'.join(fields) + '\n      </dl>\n'
 
 
 def render_requirements(recipe):
     """Render the ingredient and cookware summary lists."""
-    sections = []
     ingredients = recipe.get('ingredients', [])
     ingredient_rows = []
     for ingredient in ingredients:
@@ -158,20 +167,17 @@ def render_requirements(recipe):
         name = ingredient.get('alias') or ingredient.get('name', '')
         name = name.title()
         quantity = _grouped_quantity(ingredient, ingredients)
-        quantity_html = (
-            f'<span class="qty">{_escape(quantity)}</span>' if quantity else ''
-        )
+        quantity_html = f'<span class="qty">{_escape(quantity)}</span>'
         ingredient_rows.append(
-            f'                <li><span class="name">{_escape(name)}</span>{quantity_html}</li>'
+            f'          <li>{quantity_html}<span>{_escape(name)}</span></li>'
         )
+    groups = []
     if ingredient_rows:
-        sections.append(
-            '            <div class="ingredients">\n'
-            '              <h3 class="section-heading">Ingredients</h3>\n'
-            '              <ul class="items">\n'
-            + '\n'.join(ingredient_rows)
-            + '\n              </ul>\n'
-            '            </div>\n'
+        groups.append(
+            '        <div class="ingredient-group">\n'
+            '          <h3>Ingredients</h3>\n'
+            '          <ul>\n' + '\n'.join(ingredient_rows) + '\n          </ul>\n'
+            '        </div>\n'
         )
 
     cookware_rows = []
@@ -181,28 +187,23 @@ def render_requirements(recipe):
         name = cookware.get('alias') or cookware.get('name', '')
         name = name.title()
         quantity = _format_quantity(cookware.get('quantity'))
-        quantity_html = (
-            f'<span class="qty">{_escape(quantity)}</span>' if quantity else ''
-        )
+        quantity_html = f'<span class="qty">{_escape(quantity)}</span>'
         cookware_rows.append(
-            f'                <li><span class="name">{_escape(name)}</span>{quantity_html}</li>'
+            f'          <li>{quantity_html}<span>{_escape(name)}</span></li>'
         )
     if cookware_rows:
-        sections.append(
-            '            <div class="cookware">\n'
-            '              <h3 class="section-heading">Cookware</h3>\n'
-            '              <ul class="items">\n'
-            + '\n'.join(cookware_rows)
-            + '\n              </ul>\n'
-            '            </div>\n'
+        groups.append(
+            '        <div class="ingredient-group">\n'
+            '          <h3>Cookware</h3>\n'
+            '          <ul>\n' + '\n'.join(cookware_rows) + '\n          </ul>\n'
+            '        </div>\n'
         )
 
-    if not sections:
-        return ''
     return (
-        '          <div class="recipe-top">\n'
-        + ''.join(sections)
-        + '          </div>\n'
+        '      <div class="recipe-sidebar">\n'
+        '        <div class="section-head">\n'
+        '          <h2>Ingredients</h2>\n'
+        '        </div>\n\n' + '\n'.join(groups) + '      </div>\n'
     )
 
 
@@ -216,15 +217,19 @@ def render_step(recipe, item):
         name = ingredient.get('alias') or ingredient.get('name', '')
         quantity = _format_quantity(ingredient.get('quantity'))
         quantity_html = (
-            f' <span class="qty">({_escape(quantity)})</span>' if quantity else ''
+            f' <span class="qty-inline">({_escape(quantity)})</span>'
+            if quantity
+            else ''
         )
-        return f'<span class="ing">{_escape(name)}{quantity_html}</span>'
+        return f'<span class="ing">{_escape(name)}</span>{quantity_html}'
     if kind == 'cookware':
         cookware = recipe['cookware'][item['index']]
         name = cookware.get('alias') or cookware.get('name', '')
         quantity = _format_quantity(cookware.get('quantity'))
         quantity_html = (
-            f' <span class="qty">({_escape(quantity)})</span>' if quantity else ''
+            f' <span class="qty-inline">({_escape(quantity)})</span>'
+            if quantity
+            else ''
         )
         return f'<span class="cook">{_escape(name)}{quantity_html}</span>'
     if kind == 'timer':
@@ -233,54 +238,73 @@ def render_step(recipe, item):
         return f'<span class="time">{_escape(" ".join(part for part in parts if part))}</span>'
     if kind == 'inlineQuantity':
         quantity = recipe['inline_quantities'][item['index']]
-        return f'<span class="qty">{_escape(_format_quantity(quantity))}</span>'
+        return f'<span class="qty-inline">{_escape(_format_quantity(quantity))}</span>'
     return ''
 
 
 def render_method(recipe):
     """Render recipe sections, text blocks and numbered steps."""
     parts = [
-        '          <div class="method-section">\n'
-        '            <h3 class="section-heading">Method</h3>\n'
+        '      <div class="recipe-method">\n'
+        '        <div class="section-head">\n'
+        '          <h2>Method</h2>\n'
+        '        </div>\n'
     ]
     for section in recipe.get('sections', []):
         if section.get('name'):
-            parts.append(f'            <h4>{_escape(section["name"])}</h4>\n')
+            parts.append(f'        <h3>{_escape(section["name"])}</h3>\n')
         in_list = False
         for content in section.get('content', []):
             if content.get('type') == 'step':
                 if not in_list:
-                    parts.append('            <ol>\n')
+                    parts.append('        <ol class="method-list">\n')
                     in_list = True
                 step = content.get('value', {})
                 body = ''.join(
                     render_step(recipe, item) for item in step.get('items', [])
                 )
                 parts.append(
-                    f'              <li>\n                <p>{body}</p>\n              </li>\n'
+                    f'          <li>\n            <p>{body}</p>\n          </li>\n'
                 )
             elif content.get('type') == 'text':
                 if in_list:
-                    parts.append('            </ol>\n')
+                    parts.append('        </ol>\n')
                     in_list = False
                 val = content.get('value', '').strip()
                 lower_val = val.lower()
-                if lower_val.startswith(('note:', 'note.')):
-                    note_text = val[5:].strip()
-                    parts.append(
-                        f'            <div class="note"><b>Note.</b> {_escape(note_text)}</div>\n'
-                    )
-                elif lower_val.startswith('note'):
-                    note_text = val[4:].lstrip(' -:.\t').strip()
-                    parts.append(
-                        f'            <div class="note"><b>Note.</b> {_escape(note_text)}</div>\n'
-                    )
-                else:
-                    parts.append(f'            <p>{_escape(val)}</p>\n')
+                if not lower_val.startswith('note'):
+                    parts.append(f'        <p>{_escape(val)}</p>\n')
         if in_list:
-            parts.append('            </ol>\n')
-    parts.append('          </div>\n')
+            parts.append('        </ol>\n')
+    parts.append('      </div>\n')
     return ''.join(parts)
+
+
+def render_notes(recipe):
+    """Render Cooklang text blocks marked as notes."""
+    notes = []
+    for section in recipe.get('sections', []):
+        for content in section.get('content', []):
+            if content.get('type') != 'text':
+                continue
+            value = content.get('value', '').strip()
+            if not value.lower().startswith('note'):
+                continue
+            note = value[4:].lstrip(' -:.\t').strip()
+            notes.append(
+                f'        <div class="note-block">\n          <p>{_escape(note)}</p>\n        </div>'
+            )
+
+    if not notes:
+        return ''
+    return (
+        '    <section id="notes">\n'
+        '      <div class="section-head">\n'
+        '        <h2>Notes</h2>\n'
+        '      </div>\n'
+        '      <div class="notes">\n' + '\n'.join(notes) + '\n      </div>\n'
+        '    </section>\n'
+    )
 
 
 def render_recipe(recipe, root_path: str | int = ''):
@@ -295,50 +319,33 @@ def render_recipe(recipe, root_path: str | int = ''):
     metadata = _metadata_map(recipe)
     title = metadata.get('title') or 'Recipe'
     description = metadata.get('description')
-    description_html = (
-        f'            <p class="dek">\n              {_escape(description)}\n            </p>\n'
-        if description
-        else ''
-    )
+    description_html = f'\n      <p>{_escape(description)}</p>' if description else ''
 
+    image = metadata.get('image') or metadata.get('photo')
+    hero_image = ''
+    if image:
+        hero_image = (
+            '      <div class="hero-image">\n'
+            f'        <img src="{_escape(image)}" alt="{_escape(title)}">\n'
+            '      </div>'
+        )
+
+    template = _template('recipe_recipe_template.html')
     return (
-        '<!DOCTYPE html>\n<html lang="en">\n\n<head>\n'
-        '  <meta charset="UTF-8">\n'
-        '  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
-        f'  <title>{_escape(title)}</title>\n'
-        '  <link rel="preconnect" href="https://fonts.googleapis.com">\n'
-        '  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
-        '  <link\n'
-        '    href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Goudy+Bookletter+1911&display=swap"\n'
-        '    rel="stylesheet">\n'
-        f'{_embedded_style()}'
-        '</head>\n\n'
-        '<body>\n'
-        '  <div class="book">\n'
-        '    <header class="topbar">\n'
-        f'      <a class="back" href="{root_prefix}index.html">← Back to contents</a>\n'
-        '      <nav>\n'
-        f'        <a class="nav-link" href="{root_prefix}index.html">Contents</a>\n'
-        f'        <a class="nav-link" href="{root_prefix}index_by_ingredient.html">Ingredient Index</a>\n'
-        f'        <a class="nav-link" href="{root_prefix}index_by_time.html">Time Index</a>\n'
-        '      </nav>\n'
-        '    </header>\n'
-        '    <main>\n'
-        '      <section>\n'
-        '        <article>\n'
-        '          <div class="recipe-head">\n'
-        f'            <h2>{_escape(title)}</h2>\n'
-        f'{description_html}'
-        f'{render_metadata(recipe)}'
-        '          </div>\n'
-        f'{render_requirements(recipe)}'
-        f'{render_method(recipe)}'
-        '        </article>\n'
-        '      </section>\n'
-        '    </main>\n'
-        '  </div>\n'
-        '</body>\n\n'
-        '</html>\n'
+        template.replace('{{TITLE}}', _escape(title))
+        .replace('{{HERO_IMAGE}}', hero_image)
+        .replace('{{HERO_CLASS}}', '' if hero_image else ' no-image')
+        .replace('{{RECIPE_ROOT}}', root_prefix)
+        .replace('{{SITE_ROOT}}', f'../{root_prefix}')
+        .replace(
+            '{{RECIPE_INTRO}}',
+            f'{description_html}\n{render_metadata(recipe)}'.strip(),
+        )
+        .replace(
+            '{{RECIPE_BODY}}',
+            f'{render_requirements(recipe)}\n{render_method(recipe)}'.strip(),
+        )
+        .replace('{{NOTES}}', render_notes(recipe).rstrip())
     )
 
 
@@ -411,36 +418,7 @@ def _recipe_group(item: dict) -> str:
     return 'Recipes'
 
 
-def _format_row_meta(metadata: dict) -> str:
-    """Format time and servings metadata for the recipe row."""
-    time = (
-        metadata.get('time')
-        or metadata.get('total_time')
-        or metadata.get('cooking_time')
-    )
-    servings = (
-        metadata.get('servings') or metadata.get('serves') or metadata.get('yield')
-    )
-    if isinstance(servings, list):
-        servings = ', '.join(str(s) for s in servings)
-
-    time_str = str(time).strip() if time else ''
-    servings_str = str(servings).strip() if servings is not None else ''
-    if servings_str and not servings_str.lower().startswith('serve'):
-        servings_str = f'serves {servings_str}'
-
-    if time_str and servings_str:
-        return f'{time_str} — {servings_str}'
-    if time_str:
-        return time_str
-    if servings_str:
-        return servings_str
-    return ''
-
-
-def render_index(
-    recipe_items: list[dict], title: str = 'Materia — A Kitchen Manual'
-) -> str:
+def render_index(recipe_items: list[dict], title: str = 'jonsim') -> str:
     """Render an index page listing all recipes grouped by meal."""
     grouped: dict[str, list[dict]] = {}
     for item in recipe_items:
@@ -454,8 +432,14 @@ def render_index(
             return (2, name)
         return (1, name)
 
+    group_names = sorted(grouped.keys(), key=group_sort_key)
+    course_nav = []
     group_sections = []
-    for group_name in sorted(grouped.keys(), key=group_sort_key):
+    for group_name in group_names:
+        group_id = re.sub(r'[^a-z0-9]+', '-', group_name.lower()).strip('-')
+        course_nav.append(
+            f'      <a href="#{_escape(group_id)}">{_escape(group_name)}</a>'
+        )
         items = grouped[group_name]
         items = sorted(
             items,
@@ -471,75 +455,70 @@ def render_index(
             recipe_title = metadata.get('title') or it.get('href', 'Recipe')
             description = metadata.get('description')
             href = it.get('href', '#')
-            meta_str = _format_row_meta(metadata)
+            time = (
+                metadata.get('time')
+                or metadata.get('total_time')
+                or metadata.get('cooking_time')
+            )
+            servings = (
+                metadata.get('servings')
+                or metadata.get('serves')
+                or metadata.get('yield')
+            )
 
             desc_html = (
-                f'<span class="row-desc">{_escape(description)}</span>'
+                f'\n              <p class="row-desc">{_escape(description)}</p>'
                 if description
                 else ''
             )
-            meta_html = (
-                f'<span class="row-meta">{_escape(meta_str)}</span>' if meta_str else ''
-            )
+            time_html = f'<span class="row-time">{_escape(time)}</span>' if time else ''
+            serves_html = ''
+            if servings is not None:
+                if isinstance(servings, list):
+                    servings = ', '.join(str(value) for value in servings)
+                servings = str(servings).strip()
+                if not servings.lower().startswith('serve'):
+                    servings = f'serves {servings}'
+                serves_html = f'<span class="row-serves">{_escape(servings)}</span>'
 
             rows.append(
-                '              <li>'
-                f'<a class="recipe-row" href="{_escape(href)}">'
-                '<span class="row-main">'
-                f'<span class="row-title">{_escape(recipe_title)}</span>'
-                f'{desc_html}'
-                '</span>'
-                f'{meta_html}'
-                '</a>'
-                '</li>'
+                '      <li>\n'
+                f'        <a class="project-row" href="{_escape(href)}">\n'
+                '          <div class="row-main">\n'
+                f'            <h3 class="row-title">{_escape(recipe_title)}</h3>'
+                f'{desc_html}\n'
+                '          </div>\n'
+                '          <div class="row-meta tags">\n'
+                f'            {time_html}\n'
+                f'            {serves_html}\n'
+                '          </div>\n'
+                '        </a>\n'
+                '      </li>'
             )
 
         group_sections.append(
-            '          <div class="meal-group">\n'
-            f'            <h2 class="section-heading">{_escape(group_name)}</h2>\n'
-            '            <ol class="recipe-list">\n'
-            + '\n'.join(rows)
-            + '\n            </ol>\n'
-            '          </div>\n'
+            f'    <section id="{_escape(group_id)}">\n'
+            '      <div class="section-head">\n'
+            f'        <h2>{_escape(group_name)}</h2>\n'
+            '      </div>\n'
+            '      <ol class="project-list">\n' + '\n'.join(rows) + '\n      </ol>\n'
+            '    </section>\n'
         )
 
-    contents_body = ''.join(group_sections)
-
+    nav_body = '\n'.join(course_nav)
+    if nav_body:
+        nav_body = f'\n      <span class="page-nav-label">Jump to</span>\n{nav_body}'
+    course_content = ''
+    if group_sections:
+        course_content = (
+            '    <nav class="page-nav" aria-label="Jump to course">'
+            f'{nav_body}\n'
+            '    </nav>\n\n' + ''.join(group_sections).rstrip()
+        )
     return (
-        '<!DOCTYPE html>\n<html lang="en">\n\n<head>\n'
-        '  <meta charset="UTF-8">\n'
-        '  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
-        f'  <title>{_escape(title)}</title>\n'
-        '  <link rel="preconnect" href="https://fonts.googleapis.com">\n'
-        '  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
-        '  <link\n'
-        '    href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Goudy+Bookletter+1911&display=swap"\n'
-        '    rel="stylesheet">\n'
-        f'{_embedded_style()}'
-        '</head>\n\n'
-        '<body>\n'
-        '  <div class="book">\n'
-        '    <header class="topbar">\n'
-        '      <div class="mark">jonsim <span>kitchen manual</span></div>\n'
-        '      <nav>\n'
-        '        <a class="nav-link is-active" href="index.html">Contents</a>\n'
-        '        <a class="nav-link" href="index_by_ingredient.html">Ingredient Index</a>\n'
-        '        <a class="nav-link" href="index_by_time.html">Time Index</a>\n'
-        '      </nav>\n'
-        '    </header>\n'
-        '    <main>\n'
-        '      <section>\n'
-        '        <div class="page-intro">\n'
-        '          <h1>Recipes</h1>\n'
-        '        </div>\n'
-        '        <div class="contents">\n'
-        f'{contents_body}'
-        '        </div>\n'
-        '      </section>\n'
-        '    </main>\n'
-        '  </div>\n'
-        '</body>\n\n'
-        '</html>\n'
+        _template('recipe_index_template.html')
+        .replace('{{TITLE}}', _escape(title))
+        .replace('{{COURSE_NAV_AND_SECTIONS}}', course_content)
     )
 
 

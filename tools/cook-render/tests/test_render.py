@@ -79,34 +79,47 @@ class RenderRecipeTests(unittest.TestCase):
     def test_renders_cookcli_json(self):
         rendered = cook_render.render_recipe(pancakes_recipe())
 
-        self.assertTrue(rendered.startswith('<!DOCTYPE html>'))
-        self.assertIn('<title>Swedish Chef&#39;s Pancakes</title>', rendered)
-        self.assertIn('family=Goudy+Bookletter+1911', rendered)
-        self.assertIn('family=Archivo', rendered)
+        self.assertTrue(rendered.startswith('<!doctype html>'))
+        self.assertIn('<title>jonsim | Swedish Chef&#39;s Pancakes</title>', rendered)
+        self.assertIn('family=DM+Sans', rendered)
+        self.assertIn('family=Lekton', rendered)
         self.assertNotIn('From the kitchen', rendered)
         self.assertIn('Breakfast for Beaker &amp; Bunsen', rendered)
-        self.assertIn('<dt>tags</dt>', rendered)
-        self.assertIn('<dd>breakfast, quick</dd>', rendered)
-        self.assertIn('<div class="recipe-top">', rendered)
+        self.assertIn('<dt>Tags</dt>', rendered)
         self.assertIn(
-            '<span class="name">Flour</span><span class="qty">200 g</span>', rendered
+            '<dd class="tags"><span>breakfast</span><span>quick</span></dd>',
+            rendered,
+        )
+        self.assertIn('<section id="recipe-body" class="recipe-body">', rendered)
+        self.assertIn(
+            '<li><span class="qty">200 g</span><span>Flour</span></li>', rendered
         )
         self.assertIn('<span class="cook">bowl</span>', rendered)
         self.assertIn('<span class="time">2 minutes</span>', rendered)
+        self.assertNotIn('Mushroom &amp; pumpkin wellington', rendered)
+        self.assertNotIn('{{', rendered)
+
+    def test_renders_recipe_image_from_metadata(self):
+        recipe = pancakes_recipe()
+        recipe['metadata']['map']['image'] = 'pancakes.jpg'
+
+        rendered = cook_render.render_recipe(recipe)
+
+        self.assertIn(
+            '<img src="pancakes.jpg" alt="Swedish Chef&#39;s Pancakes">', rendered
+        )
+        self.assertNotIn('<dt>Image</dt>', rendered)
 
     def test_renders_with_root_path(self):
         rendered = cook_render.render_recipe(pancakes_recipe(), root_path='../')
         self.assertIn(
-            '<a class="back" href="../index.html">← Back to contents</a>', rendered
+            '<a class="back-link" href="../index.html">← All recipes</a>', rendered
         )
-        self.assertIn('<a class="nav-link" href="../index.html">Contents</a>', rendered)
         self.assertIn(
-            '<a class="nav-link" href="../index_by_ingredient.html">Ingredient Index</a>',
+            '<link rel="stylesheet" type="text/css" href="../recipe_style.css">',
             rendered,
         )
-        self.assertIn(
-            '<a class="nav-link" href="../index_by_time.html">Time Index</a>', rendered
-        )
+        self.assertIn('<a href="../index.html" class="is-active">Recipes</a>', rendered)
 
     def test_renders_notes_and_named_sections(self):
         recipe = pancakes_recipe()
@@ -131,8 +144,9 @@ class RenderRecipeTests(unittest.TestCase):
 
         rendered = cook_render.render_recipe(recipe)
 
-        self.assertIn('<h4>Batter</h4>', rendered)
-        self.assertIn('<div class="note"><b>Note.</b> Do not overmix.</div>', rendered)
+        self.assertIn('<h3>Batter</h3>', rendered)
+        self.assertIn('<section id="notes">', rendered)
+        self.assertIn('<p>Do not overmix.</p>', rendered)
 
     def test_escapes_recipe_text(self):
         recipe = pancakes_recipe()
@@ -185,53 +199,46 @@ class RenderIndexTests(unittest.TestCase):
 
         rendered = cook_render.render_index(recipes)
 
-        self.assertTrue(rendered.startswith('<!DOCTYPE html>'))
-        self.assertIn('<title>Materia — A Kitchen Manual</title>', rendered)
-        self.assertIn('family=Goudy+Bookletter+1911', rendered)
-        self.assertIn('family=Archivo', rendered)
-        self.assertIn('<div class="book">', rendered)
-        self.assertIn(
-            '<div class="mark">jonsim <span>kitchen manual</span></div>', rendered
-        )
-        self.assertIn(
-            '<a class="nav-link is-active" href="index.html">Contents</a>', rendered
-        )
-        self.assertIn('<h1>Recipes</h1>', rendered)
+        self.assertTrue(rendered.startswith('<!doctype html>'))
+        self.assertIn('<title>jonsim</title>', rendered)
+        self.assertIn('family=DM+Sans', rendered)
+        self.assertIn('family=Lekton', rendered)
+        self.assertIn('<a class="brand" href="../index.html">jonsim</a>', rendered)
+        self.assertIn('<h1>Things I <span>cook</span>.</h1>', rendered)
 
         # Meal groups
-        self.assertIn('<h2 class="section-heading">Breakfast</h2>', rendered)
-        self.assertIn('<h2 class="section-heading">Dessert</h2>', rendered)
-        self.assertIn('<h2 class="section-heading">Recipes</h2>', rendered)
+        self.assertIn('<h2>Breakfast</h2>', rendered)
+        self.assertIn('<h2>Dessert</h2>', rendered)
+        self.assertIn('<h2>Recipes</h2>', rendered)
 
         # Recipe rows
-        self.assertIn('<a class="recipe-row" href="pancakes.html">', rendered)
+        self.assertIn('<a class="project-row" href="pancakes.html">', rendered)
         self.assertIn(
-            '<span class="row-title">Swedish Chef&#39;s Pancakes</span>', rendered
+            '<h3 class="row-title">Swedish Chef&#39;s Pancakes</h3>', rendered
         )
         self.assertIn(
-            '<span class="row-desc">Breakfast for Beaker &amp; Bunsen</span>', rendered
+            '<p class="row-desc">Breakfast for Beaker &amp; Bunsen</p>', rendered
         )
-        self.assertIn('<span class="row-meta">serves 2</span>', rendered)
+        self.assertIn('<span class="row-serves">serves 2</span>', rendered)
 
         self.assertIn(
-            '<a class="recipe-row" href="desserts/cheesecake.html">', rendered
+            '<a class="project-row" href="desserts/cheesecake.html">', rendered
         )
-        self.assertIn(
-            '<span class="row-title">Burnt Basque Cheesecake</span>', rendered
-        )
-        self.assertIn(
-            '<span class="row-meta">1 hr, plus chilling — serves 8-10</span>', rendered
-        )
+        self.assertIn('<h3 class="row-title">Burnt Basque Cheesecake</h3>', rendered)
+        self.assertIn('<span class="row-time">1 hr, plus chilling</span>', rendered)
+        self.assertIn('<span class="row-serves">serves 8-10</span>', rendered)
 
-        self.assertIn('<a class="recipe-row" href="sauce.html">', rendered)
-        self.assertIn('<span class="row-title">Tomato Sauce</span>', rendered)
-        self.assertIn('<span class="row-meta">30 min</span>', rendered)
+        self.assertIn('<a class="project-row" href="sauce.html">', rendered)
+        self.assertIn('<h3 class="row-title">Tomato Sauce</h3>', rendered)
+        self.assertIn('<span class="row-time">30 min</span>', rendered)
+        self.assertNotIn("Jon's Christmas Muesli", rendered)
+        self.assertNotIn('{{', rendered)
 
     def test_renders_empty_index_page(self):
         rendered = cook_render.render_index([])
-        self.assertTrue(rendered.startswith('<!DOCTYPE html>'))
-        self.assertIn('<h1>Recipes</h1>', rendered)
-        self.assertNotIn('<div class="meal-group">', rendered)
+        self.assertTrue(rendered.startswith('<!doctype html>'))
+        self.assertIn('<h1>Things I <span>cook</span>.</h1>', rendered)
+        self.assertNotIn('<ol class="project-list">', rendered)
 
 
 class RenderIndexByIngredientTests(unittest.TestCase):

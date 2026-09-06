@@ -1,4 +1,5 @@
 import json
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -42,29 +43,33 @@ class CLITests(unittest.TestCase):
         cake_html = self.out_dir / 'desserts' / 'cake.html'
         index_html = self.out_dir / 'index.html'
         ing_index_html = self.out_dir / 'index_by_ingredient.html'
+        recipe_style = self.out_dir / 'recipe_style.css'
 
         self.assertTrue(simple_html.exists())
         self.assertTrue(cake_html.exists())
         self.assertTrue(index_html.exists())
         self.assertTrue(ing_index_html.exists())
-        self.assertIn('<!DOCTYPE html>', simple_html.read_text(encoding='utf-8'))
+        self.assertTrue(recipe_style.exists())
+        self.assertIn('<!doctype html>', simple_html.read_text(encoding='utf-8'))
         self.assertIn(
-            'href="index.html">Contents</a>', simple_html.read_text(encoding='utf-8')
+            'href="index.html">← All recipes</a>',
+            simple_html.read_text(encoding='utf-8'),
         )
-        self.assertIn('<h2>Dummy</h2>', cake_html.read_text(encoding='utf-8'))
+        self.assertIn('<h1>Dummy.</h1>', cake_html.read_text(encoding='utf-8'))
         self.assertIn(
-            'href="../index.html">Contents</a>', cake_html.read_text(encoding='utf-8')
-        )
-        self.assertIn(
-            'href="../index_by_ingredient.html">Ingredient Index</a>',
+            'href="../index.html">← All recipes</a>',
             cake_html.read_text(encoding='utf-8'),
         )
         self.assertIn(
-            '<a class="recipe-row" href="simple.html">',
+            'href="../recipe_style.css"',
+            cake_html.read_text(encoding='utf-8'),
+        )
+        self.assertIn(
+            '<a class="project-row" href="simple.html">',
             index_html.read_text(encoding='utf-8'),
         )
         self.assertIn(
-            '<a class="recipe-row" href="desserts/cake.html">',
+            '<a class="project-row" href="desserts/cake.html">',
             index_html.read_text(encoding='utf-8'),
         )
         self.assertIn(
@@ -97,6 +102,7 @@ class CLITests(unittest.TestCase):
             ret = main(['-b', str(self.base_dir), '-o', str(self.out_dir)])
             self.assertEqual(ret, 1)
 
+    @unittest.skipUnless(shutil.which('cook'), 'CookCLI is not installed')
     def test_real_cook_execution(self):
         # Run against tests/examples with actual cook CLI if available
         examples_dir = Path(__file__).parent / 'examples'
@@ -110,12 +116,12 @@ class CLITests(unittest.TestCase):
         self.assertTrue((self.out_dir / 'minimal.html').exists())
 
         pancakes_content = (self.out_dir / 'pancakes.html').read_text(encoding='utf-8')
-        self.assertIn('<h2>Pancakes</h2>', pancakes_content)
-        self.assertIn('<span class="name">Flour</span>', pancakes_content)
+        self.assertIn('<h1>Pancakes.</h1>', pancakes_content)
+        self.assertIn('<span>Flour</span>', pancakes_content)
 
         index_content = (self.out_dir / 'index.html').read_text(encoding='utf-8')
-        self.assertIn('<h1>Recipes</h1>', index_content)
-        self.assertIn('<a class="recipe-row" href="pancakes.html">', index_content)
+        self.assertIn('<h1>Things I <span>cook</span>.</h1>', index_content)
+        self.assertIn('<a class="project-row" href="pancakes.html">', index_content)
 
         ing_content = (self.out_dir / 'index_by_ingredient.html').read_text(
             encoding='utf-8'
