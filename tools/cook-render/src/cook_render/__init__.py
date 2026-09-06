@@ -2,8 +2,10 @@
 
 import argparse
 import json
+import shutil
 import subprocess
 import sys
+import urllib.request
 from importlib import resources
 from pathlib import Path
 
@@ -23,6 +25,48 @@ def load_recipe(cook_path: Path) -> dict:
         check=True,
     )
     return json.loads(result.stdout)
+
+
+def deploy_image(recipe, base_path: Path, cook_path: Path, output_dir: Path) -> None:
+    """Download or copy images into the output directory, fixing up the metadata
+    so the HTML template can find it.
+
+    The resultant image ends up in same output dir the HTML file will end up in,
+    named identically save for the extension.
+    """
+
+    def is_url(maybe_url: str) -> bool:
+        return maybe_url.startswith('http://') or maybe_url.startswith('https://')
+
+    metadata = recipe.get('metadata', recipe.get('raw_metadata', {}))
+    metadata = metadata.get('map', metadata)
+    image = metadata.get('image') or metadata.get('photo')
+    if not image:
+        return
+
+    image_extension = image.rsplit('.', 1)[1]
+    output_path = output_dir / (cook_path.with_suffix(f'.{image_extension}'))
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    if is_url(image):
+        req = urllib.request.Request(
+            image,
+            headers={
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+            },
+        )
+        with (
+            urllib.request.urlopen(req) as response,
+            open(output_path, 'wb') as out_file,
+        ):
+            out_file.write(response.read())
+        pass
+    else:
+        image_path = base_path / image
+        if image_path.is_file():
+            shutil.copy2(image_path, output_path)
+        else:
+            print(f'WARNING: image {image_path} not found for recipe {cook_path}')
+    metadata['image'] = output_path.name
 
 
 def main(argv=None):
@@ -89,6 +133,9 @@ def main(argv=None):
         relative_path = cook_file.relative_to(base_path)
         depth = len(relative_path.parent.parts)
         root_path = '../' * depth
+
+        deploy_image(recipe, base_path, relative_path, output_dir)
+
         html_content = render_recipe(recipe, root_path=root_path)
         target_path = output_dir / relative_path.with_suffix('.html')
         target_path.parent.mkdir(parents=True, exist_ok=True)
