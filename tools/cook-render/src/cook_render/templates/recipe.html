@@ -53,7 +53,7 @@
 {% for field in metadata %}
         <div>
           <dt>{{ field.label }}</dt>
-{% if field.tags is not none %}
+{% if field.tags %}
           <dd class="tags">{% for tag in field.tags %}<span>{{ tag }}</span>{% endfor %}</dd>
 {% else %}
           <dd>{{ field.value }}</dd>

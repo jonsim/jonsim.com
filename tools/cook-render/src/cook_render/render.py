@@ -141,18 +141,26 @@ def _metadata_map(recipe):
 def _metadata_fields(metadata):
     fields = []
     for key, value in sorted(metadata.items()):
-        if key in {'title', 'description', 'image', 'photo'}:
+        key = key.lower()
+        if key in {'title', 'description', 'image', 'photo', 'source'}:
             continue
         label = 'Serves' if key == 'servings' else key.replace('_', ' ').title()
-        tags = value if key.lower() == 'tags' and isinstance(value, list) else None
-        if tags is not None:
-            display_value = None
-        elif isinstance(value, list):
-            display_value = ', '.join(str(item) for item in value)
-        elif isinstance(value, str):
-            display_value = value
+        display_value = None
+        tags = None
+        if key == 'tags':
+            if isinstance(value, list):
+                tags = value
+            elif isinstance(value, str):
+                tags = value.split(',')
+            else:
+                tags = []
         else:
-            display_value = json.dumps(value, separators=(',', ':'))
+            if isinstance(value, list):
+                display_value = ', '.join(str(item) for item in value)
+            elif isinstance(value, str):
+                display_value = value
+            else:
+                display_value = json.dumps(value, separators=(',', ':'))
         fields.append({'label': label, 'value': display_value, 'tags': tags})
     return fields
 
