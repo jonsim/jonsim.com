@@ -84,6 +84,34 @@ def _format_quantity(quantity):
     return f'{amount} {unit}' if unit else amount
 
 
+def _parse_minutes(s: str) -> int:
+    """Parse strings like '15 minutes', '1 hour', '1 hour 30 minutes' into total minutes."""
+    hours = re.search(r'(\d+)\s*hour', s)
+    minutes = re.search(r'(\d+)\s*minute', s)
+    total = 0
+    if hours:
+        total += int(hours.group(1)) * 60
+    if minutes:
+        total += int(minutes.group(1))
+    return total
+
+
+def _format_minutes(total: int) -> str:
+    """Format total minutes as '1 hour 5 minutes', '50 minutes', '2 hours', etc."""
+    hours, minutes = divmod(total, 60)
+    parts = []
+    if hours:
+        parts.append(f'{hours} hour' + ('s' if hours != 1 else ''))
+    if minutes or not parts:
+        parts.append(f'{minutes} minute' + ('s' if minutes != 1 else ''))
+    return ' '.join(parts)
+
+
+def _add_durations(a: str, b: str) -> str:
+    """Adds two duration strings together to give another duration string."""
+    return _format_minutes(_parse_minutes(a) + _parse_minutes(b))
+
+
 def _quantity_number(quantity):
     """Return an ordinary number when a quantity can be added safely."""
     if not quantity:
@@ -140,6 +168,10 @@ def _metadata_map(recipe):
 
 def _metadata_fields(metadata):
     fields = []
+    # Post-process and add missing metadata where possible.
+    if 'cook time' in metadata and 'prep time' in metadata and 'time' not in metadata:
+        metadata['time'] = _add_durations(metadata['cook time'], metadata['prep time'])
+    # Parse the metadata.
     for key, value in sorted(metadata.items()):
         key = key.lower()
         if key in {'title', 'description', 'image', 'photo', 'source'}:
