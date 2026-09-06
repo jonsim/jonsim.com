@@ -1,0 +1,194 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <title>Jonathan Simmonds | Blog and Portfolio</title>
+  <link href="../style.css" rel="stylesheet" type="text/css"/>
+  <link href="blog.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="blog.js"></script>
+</head>
+
+<body>
+<div class="sticky_footer_pre">
+  <div class="header_wrapper">
+    <div class="header">
+      <h1 id="pageid">Blog</h1>
+      <h1 id="title1">Jonathan Simmonds</h1>
+      <!--<h1 id="title2">Blog and Portfolio</h1>-->
+    </div>
+  </div>
+  <div class="body_wrapper">
+    <div class="nav">
+      <a href="../index.html"             class="nav">Home</a> / 
+      <a href="../profile/index.html"     class="nav">Profile</a> / 
+      <a href="../programming/index.html" class="nav">Programming</a> / 
+      <a href="../woodworking/index.html" class="nav">Woodworking</a> / 
+      <a href="../design/index.html"      class="nav">Design</a> / 
+      <a href="index.php"         class="current nav">Blog</a>
+    </div>
+    <div class="body">
+
+      <!-- POST 1 -->
+      
+      <div class="blog_post">
+        <div class="post_header">
+          <h1 class="post_title">Reconfiguring the Kinect</h1>
+          <h2 class="post_date">10th February 2013</h2>
+        </div>
+        <div class="post_content">
+          <p>
+            Having finished restructuring my code I decided to try the whole
+            unit out, only to find that I had been developing my code using a
+            Kinect for Windows, however the Kinect that had been soldered to
+            the Roomba is a Kinect for XBox.
+          </p>
+          <p>
+            Thankfully the OpenNI drivers support both (if anything the Kinect
+            for XBox is better supported), however I had some trouble making it
+            work with my code (or indeed the provided samples). After much
+            searching I replaced the camera configuration XML file that I had
+            been using. Another thing I had not realised is that the Kinect has
+            two powered-on modes, one a standby mode where the front green light
+            flashes but it does not respond to queries, and another where it is
+            fully on. As far as I can tell these modes are indistinguishable.
+            The way that the Kinect is wired to the Roomba means that when the
+            Roomba is charging only enough power for the Kinect to enter the
+            first standby mode is provided.
+          </p>
+          <p>
+            Once I had figured this out and recompiled with the new
+            configuration XML the camera worked perfectly and was identical to
+            the Kinect for Windows one. The results are shown below:
+          </p>
+          <!--<img class="blogcontent" src="blog_content/roomba_kinect_first.jpg">-->
+        </div>
+        <div class="post_footer">
+          <span class="post_footer_comments">
+            <a href="javascript:toggleCommentBlock('2')">2 Comments</a>
+          </span>
+          <span class="post_footer_categories">
+            Posted in <a class="post_category">Category 2</a>.
+          </span>
+        </div>
+        <div class="post_comments" id="post_comments_2">
+          <div class="post_comment">
+            <span class="post_comment_name">Barry the Wolfman</span>
+            <span class="post_comment_date">2013/02/31 14:31</span>
+            <br/>
+            I thought this was a great and really insightful article and am interested in hearing your opinion on the current financial crisis.
+          </div>
+          <div class="post_comment">
+            <span class="post_comment_name">Fred from Cornwall</span>
+            <span class="post_comment_date">08:06 01/03/13</span>
+            <br/>
+            What an excellent piece, expertly researched! I especially loved your taxonomy of modern business culture. I will share this brilliant article with everyone I know and love through all available social media channels.
+          </div>
+          <div class="post_comment_add">
+            <form>
+              <div class="post_comment_add_body">
+                <textarea class="borderless" id="post_comment_add_body_2" onFocus="expandAddComment('2')">Leave a comment...</textarea>
+              </div>
+              <div class="post_comment_add_footer" id="post_comment_add_footer_2">
+                <div class="post_comment_add_name">
+                  Name: <input class="borderless" type="Text" />
+                </div>
+                <div class="post_comment_add_email">
+                  Email: <input class="borderless" type="Text" />
+                </div>
+                <input class="post_comment_add_submit" type="submit" Value="Post" />
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- POST 1 -->
+      
+      <div class="blog_post">
+        <div class="post_header">
+          <h1 class="post_title">Reconfiguring the Kinect</h1>
+          <h2 class="post_date">10th February 2013</h2>
+        </div>
+        <div class="post_content">
+          <p>
+            Having finished restructuring my code I decided to try the whole
+            unit out, only to find that I had been developing my code using a
+            Kinect for Windows, however the Kinect that had been soldered to
+            the Roomba is a Kinect for XBox.
+          </p>
+          <p>
+            Thankfully the OpenNI drivers support both (if anything the Kinect
+            for XBox is better supported), however I had some trouble making it
+            work with my code (or indeed the provided samples). After much
+            searching I replaced the camera configuration XML file that I had
+            been using. Another thing I had not realised is that the Kinect has
+            two powered-on modes, one a standby mode where the front green light
+            flashes but it does not respond to queries, and another where it is
+            fully on. As far as I can tell these modes are indistinguishable.
+            The way that the Kinect is wired to the Roomba means that when the
+            Roomba is charging only enough power for the Kinect to enter the
+            first standby mode is provided.
+          </p>
+          <p>
+            Once I had figured this out and recompiled with the new
+            configuration XML the camera worked perfectly and was identical to
+            the Kinect for Windows one. The results are shown below:
+          </p>
+          <!--<img class="blogcontent" src="blog_content/roomba_kinect_first.jpg">-->
+        </div>
+        <div class="post_footer">
+          <span class="post_footer_comments">
+            <a href="javascript:toggleCommentBlock('2')">2 Comments</a>
+          </span>
+          <span class="post_footer_categories">
+            Posted in <a class="post_category">Category 2</a>.
+          </span>
+        </div>
+        <div class="post_comments" id="post_comments_2">
+          <div class="post_comment">
+            <span class="post_comment_name">Barry the Wolfman</span>
+            <span class="post_comment_date">2013/02/31 14:31</span>
+            <br/>
+            I thought this was a great and really insightful article and am interested in hearing your opinion on the current financial crisis.
+          </div>
+          <div class="post_comment">
+            <span class="post_comment_name">Fred from Cornwall</span>
+            <span class="post_comment_date">08:06 01/03/13</span>
+            <br/>
+            What an excellent piece, expertly researched! I especially loved your taxonomy of modern business culture. I will share this brilliant article with everyone I know and love through all available social media channels.
+          </div>
+          <div class="post_comment_add">
+            <form>
+              <div class="post_comment_add_body">
+                <textarea class="borderless" id="post_comment_add_body_2" onFocus="expandAddComment('2')">Leave a comment...</textarea>
+              </div>
+              <div class="post_comment_add_footer" id="post_comment_add_footer_2">
+                <div class="post_comment_add_name">
+                  Name: <input class="borderless" type="Text" />
+                </div>
+                <div class="post_comment_add_email">
+                  Email: <input class="borderless" type="Text" />
+                </div>
+                <input class="post_comment_add_submit" type="submit" Value="Post" />
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+
+
+    </div>
+  </div>
+  <div class="sticky_footer_spacer"></div>
+</div>
+<div class="sticky_footer_content">
+  This website and all content contained upon it are copyright &copy; Jonathan
+  Simmonds 2013-2020, all rights reserved.<br/>
+  No part of the website or its content may be reproduced without expressed
+  permission.
+</div>
+</body>
+
+</html>

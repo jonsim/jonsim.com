@@ -1,0 +1,163 @@
+
+
+div.blog_post + div.blog_post
+{
+    margin-top: 40px;
+}
+div.post_header
+{
+    padding: 10px 8px;
+    border-left:  8px solid #FF9B23;
+    background-color: #eee;
+}
+div.post_content
+{
+    padding: 0.5em 0;
+    border-bottom: 2px solid #eee;
+}
+div.post_footer
+{
+    overflow: auto;
+    padding: 0.1em 0.5em;
+    color: #999;
+}
+
+span.post_footer_comments
+{
+    float: left;
+}
+span.post_footer_categories
+{
+    float: right;
+}
+
+img.post_content
+{
+    display: block;
+    margin: 1em auto;
+    padding: 0;
+    clear: both;
+}
+
+h1.post_title, h2.post_date
+{
+    max-width: none;
+    min-width: none;
+    width:     auto;
+    
+    margin:  0;
+    padding: 0;
+    
+    font-family: Abel;
+    font-style:  normal;
+    font-weight: normal;
+    font-size:   20pt;
+    text-transform: uppercase;
+    color:       #000;
+    
+    border:           none;
+    background-color: transparent;
+    text-shadow:      none;
+}
+h2.post_date
+{
+    font-size:   12pt;
+    color:       #999;
+}
+
+
+
+
+
+div.post_comments
+{
+    display: none;
+    padding: 0 1.0em;
+}
+div.post_comment
+{
+    margin: 0.5em 0 1.0em 0;
+    /*background-color: #eee;*/
+    border-top: 2px solid #eee;
+}
+span.post_comment_name
+{
+    line-height: 2em;
+    font-weight: bold;
+}
+span.post_comment_date
+{
+    float: right;
+    color: #555;
+}
+
+/* add comment form */
+div.post_comment_add
+{
+    border: 1px solid #999;
+    margin: 0.5em 0;
+}
+div.post_comment_add_footer
+{
+    display: none;
+    text-align: left;
+    border-top: 1px solid #999;
+}
+div.post_comment_add_name, div.post_comment_add_email
+{
+    margin: 0;
+    padding: 3px;
+    
+    display: inline-block;
+    width: 42%;
+    height: 21px;
+    text-align: left;
+    
+    color: #3b3b3b;
+}
+div.post_comment_add_name
+{
+    border-right: 1px solid #999;
+    margin-right: -1px;
+}
+div.post_comment_add_body
+{
+    padding: 0.5em;
+}
+input.borderless, input.borderless:hover, input.borderless:focus
+{
+    margin: 0.2em;
+    padding: 0;
+    width: 80%;
+    border: none;
+    outline: none;
+}
+textarea.borderless, textarea.borderless, textarea.borderless:focus
+{
+    margin: 0;
+    padding: 0;
+    border-width: 0;
+
+    resize: none;
+    border:  none;
+    outline: none;
+    overflow: hidden;
+    width: 100%;
+    height: 2em;
+    color: #3b3b3b;
+}
+input.post_comment_add_submit
+{
+    border: none;
+    background-color: #3b3b3b;
+    font-weight: bold;
+    width: 70px;
+    height: 27px;
+    color: #eee;
+    float: right;
+}
+input.post_comment_add_submit:hover
+{
+    background-color: #eee;
+    color: #3b3b3b;
+}
