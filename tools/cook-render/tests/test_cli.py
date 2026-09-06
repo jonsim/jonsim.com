@@ -43,12 +43,14 @@ class CLITests(unittest.TestCase):
         cake_html = self.out_dir / 'desserts' / 'cake.html'
         index_html = self.out_dir / 'index.html'
         ing_index_html = self.out_dir / 'index_by_ingredient.html'
+        style = self.out_dir / 'style.css'
         recipe_style = self.out_dir / 'recipe_style.css'
 
         self.assertTrue(simple_html.exists())
         self.assertTrue(cake_html.exists())
         self.assertTrue(index_html.exists())
         self.assertTrue(ing_index_html.exists())
+        self.assertTrue(style.exists())
         self.assertTrue(recipe_style.exists())
         self.assertIn('<!doctype html>', simple_html.read_text(encoding='utf-8'))
         self.assertIn(

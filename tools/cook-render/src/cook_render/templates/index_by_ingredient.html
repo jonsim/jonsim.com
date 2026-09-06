@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Goudy+Bookletter+1911&display=swap"
+    rel="stylesheet">
+  <link href="style.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+  <div class="book">
+    <header class="topbar">
+      <div class="mark">jonsim <span>kitchen manual</span></div>
+      <nav>
+        <a class="nav-link" href="index.html">Contents</a>
+        <a class="nav-link is-active" href="index_by_ingredient.html">Ingredient Index</a>
+        <a class="nav-link" href="index_by_time.html">Time Index</a>
+      </nav>
+    </header>
+    <main>
+      <section id="ingredient-index">
+        <div class="page-intro">
+          <h1>Index by Ingredient</h1>
+        </div>
+        <ul class="ingredient-index">
+{% for ingredient in ingredients %}
+          <li>
+            <span class="term">{{ ingredient.term }}</span>
+            <span class="refs">
+{% for recipe in ingredient.recipes %}
+              <p><a href="{{ recipe.href }}">{{ recipe.title }}</a></p>
+{% endfor %}
+            </span>
+          </li>
+{% endfor %}
+        </ul>
+      </section>
+    </main>
+  </div>
+</body>
+
+</html>

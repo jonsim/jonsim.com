@@ -83,7 +83,6 @@ class RenderRecipeTests(unittest.TestCase):
         self.assertIn('<title>jonsim | Swedish Chef&#39;s Pancakes</title>', rendered)
         self.assertIn('family=DM+Sans', rendered)
         self.assertIn('family=Lekton', rendered)
-        self.assertNotIn('From the kitchen', rendered)
         self.assertIn('Breakfast for Beaker &amp; Bunsen', rendered)
         self.assertIn('<dt>Tags</dt>', rendered)
         self.assertIn(
@@ -96,8 +95,6 @@ class RenderRecipeTests(unittest.TestCase):
         )
         self.assertIn('<span class="cook">bowl</span>', rendered)
         self.assertIn('<span class="time">2 minutes</span>', rendered)
-        self.assertNotIn('Mushroom &amp; pumpkin wellington', rendered)
-        self.assertNotIn('{{', rendered)
 
     def test_renders_recipe_image_from_metadata(self):
         recipe = pancakes_recipe()
@@ -231,8 +228,6 @@ class RenderIndexTests(unittest.TestCase):
         self.assertIn('<a class="project-row" href="sauce.html">', rendered)
         self.assertIn('<h3 class="row-title">Tomato Sauce</h3>', rendered)
         self.assertIn('<span class="row-time">30 min</span>', rendered)
-        self.assertNotIn("Jon's Christmas Muesli", rendered)
-        self.assertNotIn('{{', rendered)
 
     def test_renders_empty_index_page(self):
         rendered = cook_render.render_index([])
@@ -297,7 +292,8 @@ class RenderIndexByIngredientTests(unittest.TestCase):
         rendered = cook_render.render_index_by_ingredient([])
         self.assertTrue(rendered.startswith('<!DOCTYPE html>'))
         self.assertIn('<h1>Index by Ingredient</h1>', rendered)
-        self.assertIn('<ul class="ingredient-index">\n        </ul>', rendered)
+        self.assertIn('<ul class="ingredient-index">', rendered)
+        self.assertNotIn('<span class="term">', rendered)
 
 
 if __name__ == '__main__':

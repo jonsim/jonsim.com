@@ -103,12 +103,10 @@ def main(argv=None):
         )
 
     output_dir.mkdir(parents=True, exist_ok=True)
-    recipe_style = (
-        resources.files('cook_render')
-        .joinpath('recipe_style.css')
-        .read_text(encoding='utf-8')
-    )
-    (output_dir / 'recipe_style.css').write_text(recipe_style, encoding='utf-8')
+    static_dir = resources.files('cook_render').joinpath('static')
+    for filename in ('style.css', 'recipe_style.css'):
+        content = static_dir.joinpath(filename).read_text(encoding='utf-8')
+        (output_dir / filename).write_text(content, encoding='utf-8')
 
     index_html = render_index(recipe_items)
     (output_dir / 'index.html').write_text(index_html, encoding='utf-8')

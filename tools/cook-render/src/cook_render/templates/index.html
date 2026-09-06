@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>{{TITLE}}</title>
+  <title>{{ title }}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -12,7 +12,7 @@
     rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Lekton:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="stylesheet" type="text/css" href="{{ site_root }}style.css">
 </head>
 
 <body>
@@ -43,8 +43,44 @@
     </section>
     <div class="hero-rule"></div>
 
-{{COURSE_NAV_AND_SECTIONS}}
+    {% if groups %}
+    <nav class="page-nav" aria-label="Jump to course">
+      <span class="page-nav-label">Jump to</span>
+      {% for group in groups %}
+      <a href="#{{ group.id }}">{{ group.name }}</a>
+      {% endfor %}
+    </nav>
 
+    {% for group in groups %}
+    <section id="{{ group.id }}">
+      <div class="section-head">
+        <h2>{{ group.name }}</h2>
+      </div>
+      <ol class="project-list">
+        {% for recipe in group.recipes %}
+        <li>
+          <a class="project-row" href="{{ recipe.href }}">
+            <div class="row-main">
+              <h3 class="row-title">{{ recipe.title }}</h3>
+              {% if recipe.description %}
+              <p class="row-desc">{{ recipe.description }}</p>
+              {% endif %}
+            </div>
+            <div class="row-meta tags">
+              {% if recipe.time %}
+              <span class="row-time">{{ recipe.time }}</span>
+              {% endif %}
+              {% if recipe.servings %}
+              <span class="row-serves">{{ recipe.servings }}</span>
+              {% endif %}
+            </div>
+          </a>
+        </li>
+        {% endfor %}
+      </ol>
+    </section>
+    {% endfor %}
+    {% endif %}
   </main>
   <footer>
     <div class="wrap">© Jonathan Simmonds</div>

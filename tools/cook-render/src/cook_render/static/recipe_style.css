@@ -62,9 +62,6 @@ section {
   padding: 20px 0;
   display: grid;
   gap: 10px;
-  justify-content: space-between;
-  align-items: end;
-  flex-wrap: wrap;
 }
 
 .recipe-intro p {
@@ -75,25 +72,18 @@ section {
   color: var(--muted);
 }
 
-.meta-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  flex-shrink: 0
-}
-
-.metadata dd span {
-  font-size: 12px;
-  background: var(--paper);
-  margin: 0 4px;
-}
-
 .metadata {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 15px 50px;
   color: var(--ink);
+}
+
+.metadata dd span {
+  font-size: 12px;
+  background: var(--paper);
+  margin: 0 4px;
 }
 
 .metadata div {
@@ -211,7 +201,6 @@ section {
   font: 24px var(--mono-font);
   color: var(--muted-lighter);
   padding-top: 2px
-
 }
 
 .method-list li p {

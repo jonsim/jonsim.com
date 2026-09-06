@@ -5,7 +5,9 @@ description = "A simple Python command-line application to render HTML recipe fi
 authors = [{ name = "Jonathan Simmonds", email = "jon@jonsim.com" }]
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "jinja2>=3.1.6",
+]
 
 [project.scripts]
 cook-render = "cook_render:main"
