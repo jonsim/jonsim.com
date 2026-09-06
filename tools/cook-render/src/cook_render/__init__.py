@@ -131,8 +131,9 @@ def main(argv=None):
             continue
 
         relative_path = cook_file.relative_to(base_path)
-        depth = len(relative_path.parent.parts)
-        root_path = '../' * depth
+        # depth = len(relative_path.parent.parts)
+        # root_path = '../' * depth
+        root_path = '../'
 
         deploy_image(recipe, base_path, relative_path, output_dir)
 
