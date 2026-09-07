@@ -8,7 +8,7 @@
 }
 
 .recipe-hero-header {
-  padding: 20px 0 40px;
+  padding: 40px 0 80px;
 }
 
 .recipe-hero h1 {
@@ -45,10 +45,6 @@
 /*
  * Section overrides
  */
-section {
-  padding: 44px 0
-}
-
 .section-head h2 {
   font-size: 34px;
 }
@@ -59,7 +55,7 @@ section {
  * Recipe intro: description + metadata
  */
 .recipe-intro {
-  padding: 20px 0;
+  padding: 40px 0 0 0;
   display: grid;
   gap: 10px;
 }
@@ -73,6 +69,7 @@ section {
 }
 
 .metadata {
+  margin: 0;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -306,7 +303,7 @@ section {
   }
 
   .recipe-sidebar {
-    margin-bottom: 20px
+    margin-bottom: 40px
   }
 
   .notes {
