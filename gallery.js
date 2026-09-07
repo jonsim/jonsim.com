@@ -8,7 +8,7 @@ function Gallery(parent_element)
     this.next_button    = getElementsByClass(parent_element, 'image_arrow_right')[0];
     this.prev_button    = getElementsByClass(parent_element, 'image_arrow_left')[0];
     this.position       = 0;
-    
+
     this.parent_element.onmouseover = function(){getGalleryFromWrapper(this).show_controls()};
     //this.parent_element.addEventListener('mouseout', makeMouseOutFn(this.parent_element), true);
     addEvent('mouseout', this.parent_element, makeMouseOutFn(this.parent_element), true);
@@ -102,7 +102,7 @@ function makeMouseOutFn(elem)
         {
             return;
         }
-        
+
         // handle mouse event here!
         getGalleryFromWrapper(this).hide_controls();
     };
@@ -123,7 +123,7 @@ function traverseChildren(elem)
             {
                 q.push(elemArray[i]);
             }
-            
+
         }
         return children;
 }
