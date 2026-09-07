@@ -12,3 +12,6 @@ htmlcov/
 
 # Recipe site is dynamically generated and not checked in
 /site/recipes/
+
+# The site zip is generated during deployment
+/site.zip
