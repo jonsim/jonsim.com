@@ -36,32 +36,30 @@
         <a class="back-link" href="{{ recipe_root }}index.html">← All recipes</a>
         <h1>{{ title }}.</h1>
       </div>
-{% if image %}
+      {% if image %}
       <div class="hero-image">
         <img src="{{ image }}" alt="{{ title }}">
       </div>
-{% endif %}
+      {% endif %}
     </section>
     <div class="hero-rule"></div>
 
     <div class="recipe-intro">
-{% if description %}
+      {% if description %}
       <p>{{ description }}</p>
-{% endif %}
-{% if metadata %}
+      {% endif %}
+      {% if metadata %}
       <dl class="metadata">
-{% for field in metadata %}
+        {% for label, value in metadata.all_fields() %}
+        {% if label not in ('title', 'description', 'images') and value %}
         <div>
-          <dt>{{ field.label }}</dt>
-{% if field.tags %}
-          <dd class="tags">{% for tag in field.tags %}<span>{{ tag }}</span>{% endfor %}</dd>
-{% else %}
-          <dd>{{ field.value }}</dd>
-{% endif %}
+          <dt>{{ label.replace('_', ' ').title() }}</dt>
+          <dd>{{ value }}</dd>
         </div>
-{% endfor %}
+        {% endif %}
+        {% endfor %}
       </dl>
-{% endif %}
+      {% endif %}
     </div>
 
     <section id="recipe-body" class="recipe-body">
@@ -69,87 +67,89 @@
         <div class="section-head">
           <h2>Ingredients</h2>
         </div>
-{% if ingredients %}
+        {% if ingredients %}
         <div class="ingredient-group">
-{% if ingredients.heading %}
+          {% if ingredients.heading %}
           <h3>{{ ingredients.heading }}</h3>
-{% endif %}
+          {% endif %}
           <ul>
-{% for ingredient in ingredients %}
+            {% for ingredient in ingredients %}
             <li><span class="qty">{{ ingredient.quantity }}</span><span>{{ ingredient.name }}</span></li>
-{% endfor %}
+            {% endfor %}
           </ul>
         </div>
-{% endif %}
-{% if cookware %}
+        {% endif %}
+        {% if cookware %}
         <div class="ingredient-group">
           <h3>Cookware</h3>
           <ul>
-{% for item in cookware %}
+            {% for item in cookware %}
             <li><span class="qty">{{ item.quantity }}</span><span>{{ item.name }}</span></li>
-{% endfor %}
+            {% endfor %}
           </ul>
         </div>
-{% endif %}
+        {% endif %}
       </div>
 
       <div class="recipe-method">
         <div class="section-head">
           <h2>Method</h2>
         </div>
-{% for section in method_sections %}
+        {% for section in method_sections %}
         <div class="method-group">
-{% if section.name %}
+          {% if section.name %}
           <h3>{{ section.name }}</h3>
-{% endif %}
-{% for block in section.blocks %}
-{% if block.type == 'steps' %}
+          {% endif %}
+          {% for block in section.blocks %}
+          {% if block.type == 'steps' %}
           <ol class="method-list">
-{% for step in block.steps %}
+            {% for step in block.steps %}
             <li>
               <p>
-{% for item in step -%}
-{%- if item.type == 'text' -%}
-{{ item.value }}
-{%- elif item.type == 'ingredient' -%}
-<span class="ing">{{ item.name }}</span>{% if item.quantity %} <span class="qty-inline">({{ item.quantity }})</span>{% endif %}
-{%- elif item.type == 'cookware' -%}
-<span class="cook">{{ item.name }}{% if item.quantity %} <span class="qty-inline">({{ item.quantity }})</span>{% endif %}</span>
-{%- elif item.type == 'timer' -%}
-<span class="time">{{ item.value }}</span>
-{%- elif item.type == 'inlineQuantity' -%}
-<span class="qty-inline">{{ item.value }}</span>
-{%- endif -%}
-{%- endfor %}
+                {% for item in step -%}
+                {%- if item.type == 'text' -%}
+                {{ item.value }}
+                {%- elif item.type == 'ingredient' -%}
+                <span class="ing">{{ item.name }}</span>{% if item.quantity %} <span class="qty-inline">({{
+                  item.quantity }})</span>{% endif %}
+                {%- elif item.type == 'cookware' -%}
+                <span class="cook">{{ item.name }}{% if item.quantity %} <span class="qty-inline">({{ item.quantity
+                    }})</span>{% endif %}</span>
+                {%- elif item.type == 'timer' -%}
+                <span class="time">{{ item.value }}</span>
+                {%- elif item.type == 'inlineQuantity' -%}
+                <span class="qty-inline">{{ item.value }}</span>
+                {%- endif -%}
+                {%- endfor %}
               </p>
             </li>
-{% endfor %}
+            {% endfor %}
           </ol>
-{% else %}
+          {% else %}
           <div class="method-notes">
             <p>{{ block.value }}</p>
           </div>
-{% endif %}
-{% endfor %}
+          {% endif %}
+          {% endfor %}
         </div>
-{% endfor %}
+        {% endfor %}
       </div>
     </section>
 
-{% if notes %}
+    {% if notes %}
     <section id="notes">
       <div class="section-head">
         <h2>Notes</h2>
       </div>
       <div class="notes">
-{% for note in notes %}
+        {% for note in notes %}
         <div class="note-block">
           <p>{{ note }}</p>
         </div>
-{% endfor %}
+        {% endfor %}
       </div>
     </section>
-{% endif %}
+    {% endif %}
   </main>
 
   <footer>

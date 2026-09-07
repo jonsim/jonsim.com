@@ -1,7 +1,8 @@
 """Turn CookCLI's JSON recipe output into HTML pages."""
 
-import json
 import re
+from collections.abc import Iterator
+from dataclasses import dataclass
 
 from jinja2 import Environment, PackageLoader, select_autoescape
 
@@ -45,6 +46,281 @@ KNOWN_COURSES = {
 }
 
 
+class TimeDuration:
+    @staticmethod
+    def _parse(s: str) -> int:
+        """Parse strings like '15 minutes', '1 hour', '1 hour 30 minutes' into total minutes."""
+        hours = re.search(r'(\d+)\s*h', s)
+        minutes = re.search(r'(\d+)\s*m', s)
+        total = 0
+        matched = False
+        if hours:
+            matched = True
+            total += int(hours.group(1)) * 60
+        if minutes:
+            matched = True
+            total += int(minutes.group(1))
+        if not matched:
+            raise ValueError(f'{s!r} is not a valid TimeDuration')
+        return total
+
+    def __init__(self, formatted_or_minutes: int | str):
+        if isinstance(formatted_or_minutes, int):
+            self.total_minutes = formatted_or_minutes
+        elif isinstance(formatted_or_minutes, str):
+            self.total_minutes = self._parse(formatted_or_minutes)
+        else:
+            raise TypeError('formatted_or_minutes must be an int or str')
+
+    @property
+    def formatted(self) -> str:
+        hours, minutes = divmod(self.total_minutes, 60)
+        parts = []
+        if hours:
+            parts.append(f'{hours} hour' + ('s' if hours != 1 else ''))
+        if minutes or not parts:
+            parts.append(f'{minutes} minute' + ('s' if minutes != 1 else ''))
+        return ' '.join(parts)
+
+    def __bool__(self) -> bool:
+        return self.total_minutes > 0
+
+    def __add__(self, other: 'TimeDuration') -> 'TimeDuration':
+        return self.__class__(self.total_minutes + other.total_minutes)
+
+    def __lt__(self, other: object) -> bool:
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+        return self.total_minutes < other.total_minutes
+
+    def __le__(self, other: object) -> bool:
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+        return self.total_minutes <= other.total_minutes
+
+    def __gt__(self, other: object) -> bool:
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+        return self.total_minutes > other.total_minutes
+
+    def __ge__(self, other: object) -> bool:
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+        return self.total_minutes >= other.total_minutes
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+        return self.total_minutes == other.total_minutes
+
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+        return self.total_minutes != other.total_minutes
+
+    def __hash__(self) -> int:
+        return hash(self.total_minutes)
+
+    def __str__(self) -> str:
+        return self.formatted
+
+
+@dataclass
+class Metadata:
+    # Based on https://cooklang.org/docs/conventions/#canonical-metadata
+
+    source: str
+    author: str
+    url: str
+    servings: str
+    course: str
+    locale: str
+    total_time: TimeDuration
+    prep_time: TimeDuration
+    cook_time: TimeDuration
+    difficulty: str
+    cuisine: str
+    diets: list[str]
+    tags: list[str]
+    images: list[str]
+    title: str
+    description: str
+    other: dict[str, str]
+
+    def all_fields(self) -> Iterator[tuple[str, str]]:
+        if self.title:
+            yield ('title', self.title)
+        if self.description:
+            yield ('description', self.description)
+        if self.servings:
+            yield ('servings', str(self.servings))
+        if self.course:
+            yield ('course', self.course)
+        if self.locale:
+            yield ('locale', self.locale)
+        if self.total_time is not None:
+            yield ('total_time', self.total_time.formatted)
+        if self.prep_time is not None:
+            yield ('prep_time', self.prep_time.formatted)
+        if self.cook_time is not None:
+            yield ('cook_time', self.cook_time.formatted)
+        if self.difficulty:
+            yield ('difficulty', self.difficulty)
+        if self.cuisine:
+            yield ('cuisine', self.cuisine)
+        if self.diets:
+            yield ('diets', ', '.join(self.diets))
+        if self.tags:
+            yield ('tags', ', '.join(self.tags))
+        if self.images:
+            yield ('images', ', '.join(self.images))
+        if self.other:
+            yield from self.other.items()
+
+    @classmethod
+    def from_recipe(cls, recipe: dict) -> 'Metadata':
+        def _get_metadata_field(*field_names):
+            for field in field_names:
+                value = metadata.get(field)
+                if value is None:
+                    continue
+                else:
+                    return value
+            return None
+
+        def _get_str_metadata_field(*field_names):
+            value = _get_metadata_field(*field_names)
+            if not value:
+                return None
+            elif isinstance(value, str):
+                return value.strip()
+            else:
+                raise TypeError(f'metadata {field_names!r}: {value!r} must be a string')
+
+        def _get_int_metadata_field(*field_names):
+            value = _get_metadata_field(*field_names)
+            if not value:
+                return None
+            elif isinstance(value, int):
+                return value
+            elif isinstance(value, str):
+                return int(value.split(' ', 1)[0])
+            else:
+                raise TypeError(f'metadata {field_names!r}: {value!r} must be an int')
+
+        def _get_list_metadata_field(*field_names):
+            value = _get_metadata_field(*field_names)
+            if not value:
+                return None
+            elif isinstance(value, str):
+                return [item.strip() for item in value.split(',')]
+            elif isinstance(value, list):
+                return value
+            raise TypeError(
+                f'metadata {field_names!r}: {value!r} must be a string or list'
+            )
+
+        def _get_time_metadata_field(*field_names):
+            value = _get_metadata_field(*field_names)
+            if value is None:
+                return None
+            return TimeDuration(value)
+
+        # Extract metadata map.
+        metadata = recipe.get('metadata', recipe.get('raw_metadata', {}))
+        metadata = metadata.get('map', metadata)
+
+        # Parse metadata fields.
+        source = _get_str_metadata_field('source', 'source.name')
+        author = _get_str_metadata_field('author', 'source.author')
+        url = _get_str_metadata_field('url', 'source.url')
+        servings = _get_int_metadata_field('servings', 'serves', 'yield')
+        course = _get_str_metadata_field('course', 'category')
+        locale = _get_str_metadata_field('locale')
+        total_time = _get_time_metadata_field(
+            'time required', 'time', 'duration', 'time.total'
+        )
+        prep_time = _get_time_metadata_field('prep time', 'time.prep')
+        cook_time = _get_time_metadata_field('cook time', 'time.cook')
+        difficulty = _get_str_metadata_field('difficulty')
+        cuisine = _get_str_metadata_field('cuisine')
+        diets = _get_list_metadata_field('diet')
+        tags = _get_list_metadata_field('tags')
+        images = _get_list_metadata_field('image', 'images', 'picture', 'pictures')
+        title = _get_str_metadata_field('title')
+        description = _get_str_metadata_field('introduction', 'description')
+
+        # Get other metadata fields.
+        other = {}
+        for field in metadata:
+            if field not in (
+                'source',
+                'source.name',
+                'author',
+                'source.author',
+                'url',
+                'source.url',
+                'servings',
+                'serves',
+                'yield',
+                'course',
+                'category',
+                'locale',
+                'time required',
+                'time',
+                'duration',
+                'time.total',
+                'prep time',
+                'time.prep',
+                'cook time',
+                'time.cook',
+                'difficulty',
+                'cuisine',
+                'diet',
+                'tags',
+                'image',
+                'images',
+                'picture',
+                'pictures',
+                'title',
+                'introduction',
+                'description',
+            ):
+                value = metadata[field]
+                if value is None:
+                    continue
+                elif isinstance(value, str):
+                    other[field] = value.strip()
+                elif isinstance(value, (list, tuple)):
+                    other[field] = ', '.join(str(item).strip() for item in value)
+                else:
+                    other[field] = str(value)
+
+        # Post-process fields.
+        if prep_time is not None and cook_time is not None:
+            total_time = prep_time + cook_time
+
+        return cls(
+            source=source,
+            author=author,
+            url=url,
+            servings=servings,
+            course=course,
+            locale=locale,
+            total_time=total_time,
+            prep_time=prep_time,
+            cook_time=cook_time,
+            difficulty=difficulty,
+            cuisine=cuisine,
+            diets=diets,
+            tags=tags,
+            images=images,
+            title=title,
+            description=description,
+            other=other,
+        )
+
+
 def _format_number(number):
     """Format Cooklang's regular and fractional JSON number variants."""
     if not isinstance(number, dict):
@@ -82,34 +358,6 @@ def _format_quantity(quantity):
         amount = str(value.get('value', ''))
     unit = quantity.get('unit')
     return f'{amount} {unit}' if unit else amount
-
-
-def _parse_minutes(s: str) -> int:
-    """Parse strings like '15 minutes', '1 hour', '1 hour 30 minutes' into total minutes."""
-    hours = re.search(r'(\d+)\s*hour', s)
-    minutes = re.search(r'(\d+)\s*minute', s)
-    total = 0
-    if hours:
-        total += int(hours.group(1)) * 60
-    if minutes:
-        total += int(minutes.group(1))
-    return total
-
-
-def _format_minutes(total: int) -> str:
-    """Format total minutes as '1 hour 5 minutes', '50 minutes', '2 hours', etc."""
-    hours, minutes = divmod(total, 60)
-    parts = []
-    if hours:
-        parts.append(f'{hours} hour' + ('s' if hours != 1 else ''))
-    if minutes or not parts:
-        parts.append(f'{minutes} minute' + ('s' if minutes != 1 else ''))
-    return ' '.join(parts)
-
-
-def _add_durations(a: str, b: str) -> str:
-    """Adds two duration strings together to give another duration string."""
-    return _format_minutes(_parse_minutes(a) + _parse_minutes(b))
 
 
 def _quantity_number(quantity):
@@ -159,42 +407,6 @@ def _grouped_quantity(ingredient, ingredients):
         }
         return _format_quantity(quantity)
     return ', '.join(_format_quantity(quantity) for quantity in quantities)
-
-
-def _metadata_map(recipe):
-    metadata = recipe.get('metadata', recipe.get('raw_metadata', {}))
-    return metadata.get('map', metadata)
-
-
-def _metadata_fields(metadata):
-    fields = []
-    # Post-process and add missing metadata where possible.
-    if 'cook time' in metadata and 'prep time' in metadata and 'time' not in metadata:
-        metadata['time'] = _add_durations(metadata['cook time'], metadata['prep time'])
-    # Parse the metadata.
-    for key, value in sorted(metadata.items()):
-        key = key.lower()
-        if key in {'title', 'description', 'image', 'photo', 'source'}:
-            continue
-        label = 'Serves' if key == 'servings' else key.replace('_', ' ').title()
-        display_value = None
-        tags = None
-        if key == 'tags':
-            if isinstance(value, list):
-                tags = value
-            elif isinstance(value, str):
-                tags = value.split(',')
-            else:
-                tags = []
-        else:
-            if isinstance(value, list):
-                display_value = ', '.join(str(item) for item in value)
-            elif isinstance(value, str):
-                display_value = value
-            else:
-                display_value = json.dumps(value, separators=(',', ':'))
-        fields.append({'label': label, 'value': display_value, 'tags': tags})
-    return fields
 
 
 def _requirements(recipe):
@@ -286,15 +498,15 @@ def _root_prefix(root_path):
 
 def render_recipe(recipe, root_path: str | int = ''):
     """Render one CookCLI JSON recipe as a complete HTML document."""
-    metadata = _metadata_map(recipe)
+    metadata = Metadata.from_recipe(recipe)
     ingredients, cookware = _requirements(recipe)
     method_sections, notes = _method_and_notes(recipe)
     recipe_root = _root_prefix(root_path)
     return TEMPLATES.get_template('recipe.html').render(
-        title=metadata.get('title') or 'Recipe',
-        description=metadata.get('description'),
-        image=metadata.get('image') or metadata.get('photo'),
-        metadata=_metadata_fields(metadata),
+        title=metadata.title or 'Recipe',
+        description=metadata.description,
+        image=metadata.images[0] if metadata.images else None,
+        metadata=metadata,
         ingredients=ingredients,
         cookware=cookware,
         method_sections=method_sections,
@@ -305,20 +517,11 @@ def render_recipe(recipe, root_path: str | int = ''):
 
 
 def _recipe_group(item):
-    metadata = _metadata_map(item.get('recipe', {}))
-    for key in ('course', 'meal', 'category', 'group'):
-        value = metadata.get(key)
-        if isinstance(value, str) and value.strip():
-            return value.strip().title()
-    tags = metadata.get('tags', [])
-    if isinstance(tags, str):
-        tags = [tag.strip() for tag in tags.split(',')]
-    elif not isinstance(tags, list):
-        tags = []
-    for tag in tags:
-        course = KNOWN_COURSES.get(str(tag).strip().lower())
-        if course:
-            return course
+    # Prefer getting the group from the course data.
+    metadata = Metadata.from_recipe(item.get('recipe', {}))
+    if metadata.course:
+        return metadata.course.title()
+    # Otherwise, fall back to parent directory name.
     relative_path = item.get('relative_path')
     if relative_path and str(relative_path.parent) != '.':
         parent_name = relative_path.parent.parts[0]
@@ -336,18 +539,6 @@ def _group_sort_key(name):
     return (1, name)
 
 
-def _servings(metadata):
-    servings = (
-        metadata.get('servings') or metadata.get('serves') or metadata.get('yield')
-    )
-    if servings is None:
-        return None
-    if isinstance(servings, list):
-        servings = ', '.join(str(value) for value in servings)
-    servings = str(servings).strip()
-    return servings if servings.lower().startswith('serve') else f'serves {servings}'
-
-
 def render_index(recipe_items: list[dict], title: str = 'jonsim') -> str:
     """Render an index page listing all recipes grouped by course."""
     grouped = {}
@@ -357,23 +548,20 @@ def render_index(recipe_items: list[dict], title: str = 'jonsim') -> str:
     for name in sorted(grouped, key=_group_sort_key):
         items = sorted(
             grouped[name],
-            key=lambda item: (
-                _metadata_map(item.get('recipe', {})).get('title')
-                or item.get('href', '')
-            ).lower(),
+            key=lambda item: Metadata.from_recipe(item.get('recipe', {})).title.lower(),
         )
         recipes = []
         for item in items:
-            metadata = _metadata_map(item.get('recipe', {}))
+            metadata = Metadata.from_recipe(item.get('recipe', {}))
             recipes.append(
                 {
-                    'title': metadata.get('title') or item.get('href', 'Recipe'),
-                    'description': metadata.get('description'),
+                    'title': metadata.title or item.get('href', 'Recipe'),
+                    'description': metadata.description,
                     'href': item.get('href', '#'),
-                    'time': metadata.get('time')
-                    or metadata.get('total_time')
-                    or metadata.get('cooking_time'),
-                    'servings': _servings(metadata),
+                    'time': str(metadata.total_time) if metadata.total_time else None,
+                    'servings': f'serves {metadata.servings}'
+                    if metadata.servings
+                    else None,
                 }
             )
         groups.append(
@@ -392,8 +580,8 @@ def render_index_by_ingredient(
     """Render an index page listing all recipes grouped by ingredient."""
     ingredient_map = {}
     for item in recipe_items:
-        metadata = _metadata_map(item.get('recipe', {}))
-        recipe_title = metadata.get('title') or item.get('href', 'Recipe')
+        metadata = Metadata.from_recipe(item.get('recipe', {}))
+        recipe_title = metadata.title or item.get('href', 'Recipe')
         seen_for_recipe = set()
         for ingredient in item.get('recipe', {}).get('ingredients', []):
             name = (ingredient.get('name') or ingredient.get('alias') or '').strip()
