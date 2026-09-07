@@ -7,7 +7,16 @@ dependencies = []
 [dependency-groups]
 dev = [
     "pre-commit==4.5.1",
+    "cook-render",
 ]
 
 [tool.uv]
 package = false
+
+[tool.uv.workspace]
+members = [
+    "tools/cook-render"
+]
+
+[tool.uv.sources]
+cook-render = { workspace = true }

@@ -1,5 +1,14 @@
 # Python workspace
 /.venv/
 
+# Python build files
+__pycache__/
+*.py[cod]
+*.egg-info/
+.coverage
+build/
+dist/
+htmlcov/
+
 # Recipe site is dynamically generated and not checked in
 /site/recipes/
