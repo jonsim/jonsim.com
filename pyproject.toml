@@ -1,0 +1,13 @@
+[project]
+name = "jonsim.com-dev-workspace"
+version = "0.0.0"
+requires-python = ">=3.11"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "pre-commit==4.5.1",
+]
+
+[tool.uv]
+package = false

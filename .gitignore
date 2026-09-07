@@ -1,0 +1,5 @@
+# Python workspace
+/.venv/
+
+# Recipe site is dynamically generated and not checked in
+/site/recipes/

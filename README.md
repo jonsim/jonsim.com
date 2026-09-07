@@ -1,8 +1,26 @@
 # jonsim.com
-Source for [jonsim.com](http://www.jonsim.com). Currently this is purely static
-pages so deployment is a simple copy-paste exercise.
+Source for [jonsim.com](http://www.jonsim.com).
 
-To generate the recipes site:
+
+## One time setup
+
+Install the development tools:
+
+```sh
+uv sync
+```
+
+Install the git hooks:
+
+```sh
+uv run pre-commit install
+```
+
+
+## Deploy
+
+Generate the recipes site:
+
 ```sh
 export COOK_RENDER_PATH=/path/to/cook-render
 export RECIPE_PATH=/path/to/recipes
