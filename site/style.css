@@ -62,7 +62,8 @@ h3 {
 }
 
 footer {
-  padding: 48px 0 70px;
+  padding: 40px 0;
+  margin-top: 80px;
   border-top: 1px solid var(--line);
   color: var(--muted);
   font-size: 13px
@@ -151,7 +152,7 @@ nav a:hover {
  */
 
 .hero {
-  padding: 80px 0 80px;
+  padding: 80px 0;
   display: flex;
   justify-content: space-between;
   align-items: end
@@ -288,7 +289,7 @@ nav a:hover {
  */
 
 section {
-  padding: 88px 0
+  padding: 80px 0 0 0;
 }
 
 .section-head {
