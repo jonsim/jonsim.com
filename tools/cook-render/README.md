@@ -38,7 +38,7 @@ uv run pre-commit install
 Run the command:
 
 ```sh
-uv run cook-render
+uv run cook-render --help
 ```
 
 ### Run the tests
