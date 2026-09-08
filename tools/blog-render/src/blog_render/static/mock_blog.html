@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>jonsim | Mushroom &amp; pumpkin wellington</title>
+  <title>jonsim | interesting title</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -21,189 +21,59 @@
     <div class="wrap nav">
       <a class="brand" href="../index.html">jonsim</a>
       <nav>
-        <a href="../code/index.html">Software</a>
-        <a href="../design/index.html">Design</a>
-        <a href="../woodwork/index.html">Woodwork</a>
-        <a href="../blog/index.html">Blog</a>
-        <a href="../recipes/index.html" class="is-active">Recipes</a>
+        <a href="../code/index.html">code</a>
+        <a href="../design/index.html">design</a>
+        <a href="../woodwork/index.html">woodwork</a>
+        <a href="../blog/index.html" class="is-active">blog</a>
+        <a href="../recipes/index.html">recipes</a>
       </nav>
     </div>
   </header>
 
   <main class="wrap">
 
-    <section class="recipe-hero">
-      <div class="recipe-hero-header">
-        <a class="back-link" href="index.html">← All recipes</a>
-        <h1>Mushroom &amp; pumpkin wellington.</h1>
+    <section class="blog-hero">
+      <div class="blog-hero-header">
+        <a class="back-link" href="index.html">← All posts</a>
+        <h1>interesting title.</h1>
       </div>
-      <div class="hero-image">
-        <img src="wellington.jpg" alt="Sliced mushroom and pumpkin wellington">
-      </div>
+      <!-- <div class="hero-image">
+        <img src="header.jpg" alt="interesting title">
+      </div> -->
     </section>
     <div class="hero-rule"></div>
 
-    <div class="recipe-intro">
-      <p>
-        Two golden parcels of roasted mushroom, pumpkin and chestnut, wrapped for the table and finished with a sharp
-        redcurrant jus. Built ahead, baked on the day.
-      </p>
+    <div class="blog-intro">
       <dl class="metadata">
         <div>
-          <dt>Serves</dt>
-          <dd>6</dd>
-        </div>
-        <div>
-          <dt>Course</dt>
-          <dd>Dinner (main)</dd>
-        </div>
-        <div>
-          <dt>Cuisine</dt>
-          <dd>British</dd>
+          <dt>Date</dt>
+          <dd>10 February 2013</dd>
         </div>
         <div>
           <dt>Tags</dt>
           <dd class="tags">
-            <span>vegan</span><span>wellington</span>
+            <span>robotics</span><span>hardware</span>
           </dd>
         </div>
       </dl>
     </div>
 
-    <section id="recipe-body" class="recipe-body">
-      <div class="recipe-sidebar">
-        <div class="section-head">
-          <h2>Ingredients</h2>
-        </div>
+    <section id="blog-body" class="blog-body">
 
-        <div class="ingredient-group">
-          <h3>Wellingtons</h3>
-          <ul>
-            <li><span class="qty">200 g</span><span>Almonds</span></li>
-            <li><span class="qty">2 tbsp</span><span>Tamari or soy sauce</span></li>
-            <li><span class="qty">2 tbsp</span><span>Maple syrup</span></li>
-            <li><span class="qty">1</span><span>Leek</span></li>
-            <li><span class="qty">2 cloves</span><span>Garlic</span></li>
-            <li><span class="qty">200 g</span><span>Oyster mushrooms</span></li>
-            <li><span class="qty">10 sprigs</span><span>Sage</span></li>
-            <li><span class="qty">10 sprigs</span><span>Thyme</span></li>
-            <li><span class="qty">200 g</span><span>Pumpkin, grated</span></li>
-            <li><span class="qty">200 g</span><span>Cooked chestnuts</span></li>
-            <li><span class="qty">1 tbsp</span><span>Oil</span></li>
-            <li><span class="qty">pinch</span><span>Salt</span></li>
-            <li><span class="qty">3 tbsp</span><span>Tamari or soy sauce</span></li>
-            <li><span class="qty">½ tsp</span><span>Black pepper</span></li>
-            <li><span class="qty">150 g</span><span>Cooked couscous</span></li>
-            <li><span class="qty">2 x 320 g</span><span>Vegan puff pastry</span></li>
-            <li><span class="qty">2 tbsp</span><span>Oat milk (or non-dairy milk)</span></li>
-          </ul>
-        </div>
+      <p>Having finished restructuring my code I decided to try the whole unit out, only to find that I had been
+        developing my code using a Kinect for Windows, however the Kinect that had been soldered to the Roomba is a
+        Kinect for XBox.</p>
+      <p>Thankfully the OpenNI drivers support both (if anything the Kinect for XBox is better supported), however I had
+        some trouble making it work with my code (or indeed the provided samples). After much searching I replaced the
+        camera configuration XML file that I had been using. Another thing I had not realised is that the Kinect has two
+        powered-on modes, one a standby mode where the front green light flashes but it does not respond to queries, and
+        another where it is fully on. As far as I can tell these modes are indistinguishable. The way that the Kinect is
+        wired to the Roomba means that when the Roomba is charging only enough power for the Kinect to enter the first
+        standby mode is provided.</p>
+      <p>Once I had figured this out and recompiled with the new configuration XML the camera worked perfectly and was
+        identical to the Kinect for Windows one. The results are shown below:</p>
+      <p><img src="images/roomba_kinect_first.jpg" alt="" /></p>
 
-        <div class="ingredient-group">
-          <h3>Redcurrant jus</h3>
-          <ul>
-            <li><span class="qty">100 g</span><span>Fresh redcurrants</span></li>
-            <li><span class="qty">4 tbsp</span><span>Maple syrup</span></li>
-            <li><span class="qty">200 ml</span><span>Red wine</span></li>
-            <li><span class="qty">1 tbsp</span><span>Balsamic vinegar</span></li>
-            <li><span class="qty">500 ml</span><span>Vegetable stock</span></li>
-          </ul>
-        </div>
-
-        <div class="ingredient-group">
-          <h3>Cookware</h3>
-          <ul>
-            <li>Baking tray</li>
-            <li>Large frying pan</li>
-            <li>Saucepan</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="recipe-method">
-        <div class="section-head">
-          <h2>Method</h2>
-        </div>
-        <div class="method-group">
-          <h3>Wellingtons</h3>
-          <ol class="method-list">
-            <li>
-              <p>Preheat the oven to <span class="time">200°C</span>.</p>
-            </li>
-            <li>
-              <p>Roughly chop or crush the <span class="ing">almonds</span> <span class="qty-inline">(200 g)</span>,
-                then spread on a baking tray. Drizzle with <span class="ing">tamari or soy sauce</span>
-                <span class="qty-inline">(2 tbsp)</span> and <span class="ing">maple syrup</span>
-                <span class="qty-inline">(2 tbsp)</span>, and roast for <span class="time">10 min</span>.
-              </p>
-            </li>
-            <li>
-              <p>Slice the <span class="ing">leek</span> <span class="qty-inline">(1)</span> and wash thoroughly.
-                Peel and dice the <span class="ing">garlic</span> <span class="qty-inline">(2 cloves)</span>.
-                Roughly chop the <span class="ing">oyster mushrooms</span> <span class="qty-inline">(200 g)</span>.
-                Strip the leaves from the <span class="ing">sage</span> and <span class="ing">thyme</span>
-                <span class="qty-inline">(10 sprigs each)</span>, finely chopping the sage. Grate the flesh of the
-                <span class="ing">pumpkin</span> <span class="qty-inline">(200 g)</span>, discarding the skin and
-                seeds. Roughly chop the <span class="ing">chestnuts</span> <span class="qty-inline">(200 g)</span>.
-              </p>
-            </li>
-            <li>
-              <p>Heat a large pan with <span class="ing">oil</span> <span class="qty-inline">(1 tbsp)</span> and
-                sauté the leek for <span class="time">3–4 min</span>. Add the garlic, mushrooms, grated pumpkin and a
-                pinch of <span class="ing">salt</span>, cooking for a further <span class="time">7–10 min</span>. Stir
-                in the chestnuts, <span class="ing">tamari or soy sauce</span> <span class="qty-inline">(3 tbsp)</span>,
-                thyme, sage and <span class="ing">black pepper</span> <span class="qty-inline">(½ tsp)</span>, cooking
-                for <span class="time">3–4 min</span> more. Remove from the heat and mix in the
-                <span class="ing">couscous</span> <span class="qty-inline">(150 g)</span> and the roasted almonds.
-                Adjust seasoning to taste.
-              </p>
-            </li>
-            <li>
-              <p>Lay one sheet of <span class="ing">puff pastry</span> <span class="qty-inline">(320 g)</span> on
-                baking parchment. Place half the filling along the centre, leaving space at the edges, and compact it
-                to hold its shape. Fold the pastry over, sealing the join with a little
-                <span class="ing">oat milk</span> <span class="qty-inline">(2 tbsp)</span> and trimming the excess.
-                Roll so the seam sits underneath, tuck both ends, then lift onto a baking tray. Score the top in a
-                crisscross and brush with oat milk. Repeat with the second sheet.
-              </p>
-            </li>
-            <li>
-              <p>Bake for <span class="time">30–45 min</span>, until golden.</p>
-            </li>
-            <li>
-              <p>Meanwhile, combine the <span class="ing">redcurrants</span> <span class="qty-inline">(100 g)</span>,
-                <span class="ing">maple syrup</span> <span class="qty-inline">(4 tbsp)</span>,
-                <span class="ing">red wine</span> <span class="qty-inline">(200 ml)</span>,
-                <span class="ing">balsamic vinegar</span> <span class="qty-inline">(1 tbsp)</span> and
-                <span class="ing">vegetable stock</span> <span class="qty-inline">(500 ml)</span> in a saucepan. Bring
-                to the boil, whisking to break down the currants, then simmer until reduced by around two-thirds —
-                upwards of <span class="time">20 min</span>.
-              </p>
-            </li>
-            <li>
-              <p>Slice with a serrated knife and serve with the jus and your choice of roasted vegetables.</p>
-            </li>
-          </ol>
-          <div class="method-notes">
-            <p>Assemble both wellingtons up to a day ahead and keep chilled, unbaked,
-              under cling film. Bake straight from the fridge — add a few extra minutes.</p>
-            <p>Baked leftovers keep for two days in the fridge. Reheat in a
-              180°C oven for 15 minutes to keep the pastry crisp.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="notes">
-      <div class="section-head">
-        <h2>Notes</h2>
-      </div>
-      <div class="recipe-notes">
-        <div class="recipe-note-block">
-          <p>Baked leftovers keep for two days in the fridge. Reheat in a
-            180°C oven for 15 minutes to keep the pastry crisp.</p>
-        </div>
-      </div>
     </section>
   </main>
 

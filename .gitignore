@@ -10,6 +10,9 @@ build/
 dist/
 htmlcov/
 
+# Blog site is dynamically generated and not checked in
+/site/blog/
+
 # Recipe site is dynamically generated and not checked in
 /site/recipes/
 

@@ -62,7 +62,7 @@ def main(argv=None):
 
         deploy_image(md_file, base_path, output_dir)
 
-        html_content = render_blog(md_file)
+        html_content, metadata = render_blog(md_file)
         target_path = output_dir / relative_path.with_suffix('.html')
         target_path.parent.mkdir(parents=True, exist_ok=True)
         target_path.write_text(html_content, encoding='utf-8')
@@ -70,6 +70,7 @@ def main(argv=None):
         blog_items.append(
             {
                 'blog': html_content,
+                'metadata': metadata,
                 'href': target_path.relative_to(output_dir).as_posix(),
                 'relative_path': relative_path,
             }

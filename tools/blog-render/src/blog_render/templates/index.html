@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>{{ title }}</title>
+  <title>jonsim | blog</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -20,67 +20,61 @@
     <div class="wrap nav">
       <a class="brand" href="../index.html">jonsim</a>
       <nav>
-        <a href="../code/index.html">Software</a>
-        <a href="../design/index.html">Design</a>
-        <a href="../woodwork/index.html">Woodwork</a>
-        <a href="../blog/index.html">Blog</a>
-        <a href="../recipes/index.html" class="is-active">Recipes</a>
+        <a href="../code/index.html">code</a>
+        <a href="../design/index.html">design</a>
+        <a href="../woodwork/index.html">woodwork</a>
+        <a href="../blog/index.html" class="is-active">blog</a>
+        <a href="../recipes/index.html">recipes</a>
       </nav>
     </div>
   </header>
   <main class="wrap">
     <section class="hero">
-      <h1>Things I <span>cook</span>.</h1>
+      <h1>Things I <span>write</span>.</h1>
       <div class="hero-copy">
-        <p>
-          Sorted <span class="hero-copy-label">by course</span>. All vegetarian, often vegan.
-        </p>
+        <p>My various side-quests. Finished work, half-baked ideas, useful experiments, and the mistakes I decided to
+          document.</p>
         <div class="hero-links">
-          <a href="index_by_ingredient.html">by ingredient</a>
-          <a href="#">by time</a>
+          <a href="../index.html">About</a>
+          <a href="https://www.linkedin.com/in/jonathansimmonds" target="_blank">LinkedIn</a>
+          <a href="https://www.github.com/jonsim" target="_blank">GitHub</a>
+          <a href="mailto:jon@jonsim.com">Contact</a>
         </div>
       </div>
     </section>
     <div class="hero-rule"></div>
 
-    {% if groups %}
-    <nav class="page-nav" aria-label="Jump to course">
-      <span class="page-nav-label">Jump to</span>
-      {% for group in groups %}
-      <a href="#{{ group.id }}">{{ group.name }}</a>
-      {% endfor %}
-    </nav>
-
-    {% for group in groups %}
-    <section id="{{ group.id }}">
+    <section id="blog">
       <div class="section-head">
-        <h2>{{ group.name }}</h2>
+        <h2>Blog</h2>
       </div>
       <ol class="project-list">
-        {% for recipe in group.recipes %}
-        <li>
-          <a class="project-row" href="{{ recipe.href }}">
+        {% for post in posts %}
+        <li id="{{ post.id }}">
+          <a class="project-row" href="{{ post.href }}">
+            <div class="row-pre">
+              <span class="row-date">{{ post.date }}</span>
+            </div>
             <div class="row-main">
-              <h3 class="row-title">{{ recipe.title }}</h3>
-              {% if recipe.description %}
-              <p class="row-desc">{{ recipe.description }}</p>
+              <h3 class="row-title">
+                {{ post.title }}
+              </h3>
+              {% if post.description %}
+              <p class="row-desc">
+                {{ post.description }}
+              </p>
               {% endif %}
             </div>
             <div class="row-meta tags">
-              {% if recipe.time %}
-              <span class="row-time">{{ recipe.time }}</span>
-              {% endif %}
-              {% if recipe.servings %}
-              <span class="row-serves">{{ recipe.servings }}</span>
-              {% endif %}
+              {% for tag in post.tags %}
+              <span>{{ tag }}</span>
+              {% endfor %}
             </div>
           </a>
         </li>
         {% endfor %}
       </ol>
     </section>
-    {% endfor %}
-    {% endif %}
   </main>
   <footer>
     <div class="wrap">© Jonathan Simmonds</div>

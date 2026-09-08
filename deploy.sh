@@ -75,11 +75,13 @@ fi
 ROOT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SITE_DIR="${ROOT_PATH}/site"
 SITE_ZIP="${ROOT_PATH}/site.zip"
-OUTPUT_DIR="${SITE_DIR}/recipes"
+BLOG_SITE="${SITE_DIR}/blog"
+RECIPES_SITE="${SITE_DIR}/recipes"
 
-rm -rf "${OUTPUT_DIR}" "${SITE_ZIP}"
+rm -rf "${RECIPES_SITE}" "${BLOG_SITE}" "${SITE_ZIP}"
 
-uv run cook-render -b "${RECIPES_PATH}" -o "${OUTPUT_DIR}"
+uv run blog-render -b "${ROOT_PATH}/blog_content" -o "${BLOG_SITE}"
+uv run cook-render -b "${RECIPES_PATH}" -o "${RECIPES_SITE}"
 
 cd "${SITE_DIR}"
 zip -r "${SITE_ZIP}" .
