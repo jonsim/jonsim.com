@@ -1,9 +1,11 @@
 ---
 title: 'Primitives' Short: Deconstruction
 date: 2014-02-14
+description: A write up of the techniques used in my short film 'Primitives'.
+tags: 3D Modelling, Animation
 ---
 
-On this page I break down the individual items used in the 'Primitives' short, along with details of their construction.
+On this page I break down the individual items used in my short film 'Primitives', along with details of their construction.
 
 ## The Set
 
