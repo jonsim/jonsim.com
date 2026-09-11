@@ -6,7 +6,7 @@ authors = [{ name = "Jonathan Simmonds", email = "jon@jonsim.com" }]
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "mistune",
+    "mdtex2html",
 ]
 
 [project.scripts]

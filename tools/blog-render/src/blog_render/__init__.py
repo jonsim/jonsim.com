@@ -10,7 +10,7 @@ from blog_render.render import (
 )
 
 
-def deploy_image(md_path: Path, base_path: Path, output_dir: Path) -> None:
+def deploy_images(md_path: Path, base_path: Path, output_dir: Path) -> None:
     """Download or copy images into the output directory, so the HTML template
     can find it.
 
@@ -59,10 +59,12 @@ def main(argv=None):
     has_errors = False
     for md_file in blog_files:
         relative_path = md_file.relative_to(base_path)
+        depth = len(relative_path.parent.parts)
+        root_path = '../' * depth
 
-        deploy_image(md_file, base_path, output_dir)
+        deploy_images(md_file, base_path, output_dir)
 
-        html_content, metadata = render_blog(md_file)
+        html_content, metadata = render_blog(md_file, root_path)
         target_path = output_dir / relative_path.with_suffix('.html')
         target_path.parent.mkdir(parents=True, exist_ok=True)
         target_path.write_text(html_content, encoding='utf-8')

@@ -26,7 +26,7 @@ def load_recipe(cook_path: Path) -> dict:
     return json.loads(result.stdout)
 
 
-def deploy_image(recipe, base_path: Path, cook_path: Path, output_dir: Path) -> None:
+def deploy_images(recipe, base_path: Path, cook_path: Path, output_dir: Path) -> None:
     """Download or copy images into the output directory, fixing up the metadata
     so the HTML template can find it.
 
@@ -130,11 +130,10 @@ def main(argv=None):
             continue
 
         relative_path = cook_file.relative_to(base_path)
-        # depth = len(relative_path.parent.parts)
-        # root_path = '../' * depth
-        root_path = '../'
+        depth = len(relative_path.parent.parts)
+        root_path = '../' * depth
 
-        deploy_image(recipe, base_path, relative_path, output_dir)
+        deploy_images(recipe, base_path, relative_path, output_dir)
 
         html_content = render_recipe(recipe, root_path=root_path)
         target_path = output_dir / relative_path.with_suffix('.html')

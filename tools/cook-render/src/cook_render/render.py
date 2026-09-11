@@ -487,16 +487,13 @@ def _method_and_notes(recipe):
     return method_sections, notes
 
 
-def _root_prefix(root_path):
-    if isinstance(root_path, int):
-        return '../' * root_path
-    root_prefix = str(root_path)
-    if root_prefix and not root_prefix.endswith('/'):
-        root_prefix += '/'
-    return root_prefix
+def _root_prefix(root_path: str):
+    if root_path and not root_path.endswith('/'):
+        root_path += '/'
+    return root_path
 
 
-def render_recipe(recipe, root_path: str | int = ''):
+def render_recipe(recipe, root_path: str):
     """Render one CookCLI JSON recipe as a complete HTML document."""
     metadata = Metadata.from_recipe(recipe)
     ingredients, cookware = _requirements(recipe)
@@ -512,7 +509,6 @@ def render_recipe(recipe, root_path: str | int = ''):
         method_sections=method_sections,
         notes=notes,
         recipe_root=recipe_root,
-        site_root=f'../{recipe_root}',
     )
 
 

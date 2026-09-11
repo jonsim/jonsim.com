@@ -14,7 +14,7 @@ name = "blog-render"
 version = "0.1.0"
 source = { editable = "tools/blog-render" }
 dependencies = [
-    { name = "mistune" },
+    { name = "mdtex2html" },
 ]
 
 [package.dev-dependencies]
@@ -25,7 +25,7 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "mistune" }]
+requires-dist = [{ name = "mdtex2html" }]
 
 [package.metadata.requires-dev]
 dev = [
@@ -243,6 +243,24 @@ dev = [
 ]
 
 [[package]]
+name = "latex2mathml"
+version = "3.81.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/88/db/336c38300e44582752b95842b15a4be8fe656914cf5b02ad1bec53cebceb/latex2mathml-3.81.1.tar.gz", hash = "sha256:c95add0c0fcdecad2d70567e0643050d5ea1149fb2e98a5d5792fb1c8eea2ed5", size = 77475, upload-time = "2026-09-07T19:55:11.037Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/07/30/b8bcfb01a2514cb7554a048ed52883de276e66d757c3cc535a3c29eb9e98/latex2mathml-3.81.1-py3-none-any.whl", hash = "sha256:c337668441b71c819b6733905a8058ba9a9d767bae11a0c5fdacb3aff31361bd", size = 79159, upload-time = "2026-09-07T19:55:09.611Z" },
+]
+
+[[package]]
+name = "markdown"
+version = "3.10.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/29/6f/da4c6aea59b3001f2e8c0ec7497475aadaf3b021c10cab5b2858f0f32b26/markdown-3.10.3.tar.gz", hash = "sha256:3589362618f743188b4d955b874402bc814f4f83f544dc207719f4baa7d9c45f", size = 372596, upload-time = "2026-07-30T19:05:29.005Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/64/69/4a5af2bc115a9a33fefe51709749de8262be3f9ba063d1753a837cdbc49c/markdown-3.10.3-py3-none-any.whl", hash = "sha256:fa6c92a00a4a3c98b22728c64a935ae1928250ae65058a6ded814d2cc29a4cea", size = 110757, upload-time = "2026-07-30T19:05:27.883Z" },
+]
+
+[[package]]
 name = "markupsafe"
 version = "3.0.3"
 source = { registry = "https://pypi.org/simple" }
@@ -317,12 +335,16 @@ wheels = [
 ]
 
 [[package]]
-name = "mistune"
-version = "3.3.4"
+name = "mdtex2html"
+version = "1.3.2"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/7b/92/328a294a6de83bacb95bed01f04e0eaff4e3616ee359fc821a5dfc539b02/mistune-3.3.4.tar.gz", hash = "sha256:58b5c96d6fcb61190dfe5fae498d2b2065f99cf61e9649418fd54cf1ada86dfe", size = 121426, upload-time = "2026-07-22T05:22:30.89Z" }
+dependencies = [
+    { name = "latex2mathml" },
+    { name = "markdown" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/91/14/459e52f51b90a5a8a8827aff6593ea88de76d1a3c1a83a41da04767e209d/mdtex2html-1.3.2.tar.gz", hash = "sha256:3b2bc613e62ffdce39a9627d60a244cbbbb732b4bfcc30ddae97a9dff7d18d6d", size = 15108, upload-time = "2025-12-02T13:32:25.245Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/77/e4/288365afae98953bc01de09f686f40d8ee84578135aa7767d5d4e60b5278/mistune-3.3.4-py3-none-any.whl", hash = "sha256:ee015381e955e370962968befe1d729ab60fafb6a715ac6751763fbce38c8d4a", size = 66862, upload-time = "2026-07-22T05:22:29.419Z" },
+    { url = "https://files.pythonhosted.org/packages/d7/b1/3f39c658ce35880d4a1cc4c7854af604b905f46ae095ecb637fecbdf2d6e/mdtex2html-1.3.2-py3-none-any.whl", hash = "sha256:9bf8985ba3f1641c62df3cb9d6bb7151031bd6018ee30ad8184749ba696c2f3d", size = 14076, upload-time = "2025-12-02T13:32:22.539Z" },
 ]
 
 [[package]]

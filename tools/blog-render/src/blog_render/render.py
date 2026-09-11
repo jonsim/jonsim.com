@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
-import mistune
+import mdtex2html
 from jinja2 import Environment, PackageLoader, select_autoescape
 
 TEMPLATES = Environment(
@@ -17,7 +17,7 @@ TEMPLATES = Environment(
 
 @dataclass
 class Metadata:
-    title: str
+    title: str | None
     date: date | None
     description: str | None
     image: str | None
@@ -37,11 +37,14 @@ class Metadata:
         if self.other:
             yield from self.other.items()
 
+    def __bool__(self):
+        return bool(self.title) and bool(self.date)
+
 
 def parse_metadata(text: str) -> tuple[str, Metadata]:
     lines = text.splitlines()
     if not lines or lines[0] != '---':
-        return text, Metadata('Post', None, None, None, [], {})
+        return text, Metadata(None, None, None, None, None, None)
 
     metadata = {}
     end_index = len(lines)
@@ -52,7 +55,7 @@ def parse_metadata(text: str) -> tuple[str, Metadata]:
         key, value = line.split(':', 1)
         metadata[key.strip()] = value.strip()
 
-    title = metadata.pop('title', 'Post')
+    title = metadata.pop('title', None)
     date_str = metadata.pop('date', None)
     date_obj = date.fromisoformat(date_str) if date_str else None
     description = metadata.pop('description', None)
@@ -63,21 +66,28 @@ def parse_metadata(text: str) -> tuple[str, Metadata]:
     return remainder, Metadata(title, date_obj, description, image, tags, metadata)
 
 
+def _root_prefix(root_path: str):
+    if root_path and not root_path.endswith('/'):
+        root_path += '/'
+    return root_path
+
+
 def render_content(markdown: str) -> str:
-    return mistune.html(markdown)
+    return mdtex2html.convert(markdown, extensions=['tables', 'fenced_code', 'toc'])
 
 
-def render_blog(md_path: Path) -> tuple[str, Metadata]:
+def render_blog(md_path: Path, root_path: str) -> tuple[str, Metadata]:
     with open(md_path) as md_file:
         text = md_file.read()
         markdown, metadata = parse_metadata(text)
+        assert metadata, f'{md_path} contains no metadata'
         content = render_content(markdown)
 
+    blog_root = _root_prefix(root_path)
     return TEMPLATES.get_template('blog.html').render(
         metadata=metadata,
         content=content,
-        blog_root='',
-        site_root='../',
+        blog_root=blog_root,
     ), metadata
 
 
