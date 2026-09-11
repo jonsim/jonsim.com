@@ -107,6 +107,19 @@
 /*
  * Blog body (the actual content)
  */
+.blog-body {
+  background: var(--paper);
+  margin-top: 40px;
+  padding: 15px 20px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.blog-body :first-child {
+  margin-top: 0;
+}
+
 .blog-body h1 {
   display: inline-block;
   margin: 0;
@@ -134,6 +147,68 @@
   font-weight: 500;
   max-width: none;
   /* color: var(--accent); */
+}
+
+.blog-body img {
+  max-width: 100%;
+  height: auto;
+  display: block; /* optional: removes small inline gap below the image */
+}
+
+table {
+  border-collapse: collapse;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  overflow: hidden;
+  font-size: 14px;
+  margin: 24px 0;
+  background: var(--paper);
+}
+
+thead {
+  background: var(--bg);
+}
+
+th {
+  text-align: left;
+  padding: 14px 18px;
+  font: 13px var(--mono-font);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--muted-darker);
+  border-bottom: 1px solid var(--accent);
+  font-weight: 600;
+  text-align: center;
+}
+
+td {
+  padding: 14px 18px;
+  color: var(--ink);
+  border-bottom: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  line-height: 1.5;
+  vertical-align: top;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+td:last-child {
+  border-right: none;
+}
+
+/* Numeric / meta columns read better in mono, matching .tile-foot / .row-pre */
+td.num,
+td[data-type="number"] {
+  font: 13px var(--mono-font);
+  color: var(--muted-darker);
+}
+
+/* Responsive: let wide tables scroll rather than crush columns */
+.table-scroll {
+  overflow-x: auto;
+  border-radius: 6px;
 }
 
 

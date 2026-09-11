@@ -1,6 +1,8 @@
 """The blog-render command-line application."""
 
 import argparse
+import shutil
+from html.parser import HTMLParser
 from importlib import resources
 from pathlib import Path
 
@@ -10,14 +12,40 @@ from blog_render.render import (
 )
 
 
-def deploy_images(md_path: Path, base_path: Path, output_dir: Path) -> None:
+def deploy_images(
+    md_path: Path,
+    base_path: Path,
+    output_dir: Path,
+    html_content: str,
+    metadata: object,
+) -> None:
     """Download or copy images into the output directory, so the HTML template
     can find it.
 
     The resultant image ends up in same output dir the HTML file will end up in,
     named identically save for the extension.
     """
-    pass
+
+    class ImageExtractor(HTMLParser):
+        def handle_starttag(self, tag, attrs):
+            if tag == 'img':
+                images.append(dict(attrs)['src'])
+
+    images = []
+    if metadata.image:
+        images.append(metadata.image)
+
+    parser = ImageExtractor()
+    parser.feed(html_content)
+
+    for image in images:
+        image_path = md_path.parent / image
+        output_path = output_dir / image_path.relative_to(base_path)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        if image_path.is_file():
+            shutil.copy2(image_path, output_path)
+        else:
+            print(f'WARNING: image {image_path} not found for post {md_path}')
 
 
 def main(argv=None):
@@ -62,12 +90,13 @@ def main(argv=None):
         depth = len(relative_path.parent.parts)
         root_path = '../' * depth
 
-        deploy_images(md_file, base_path, output_dir)
-
-        html_content, metadata = render_blog(md_file, root_path)
         target_path = output_dir / relative_path.with_suffix('.html')
         target_path.parent.mkdir(parents=True, exist_ok=True)
+
+        html_content, metadata = render_blog(md_file, root_path)
         target_path.write_text(html_content, encoding='utf-8')
+
+        deploy_images(md_file, base_path, output_dir, html_content, metadata)
 
         blog_items.append(
             {
