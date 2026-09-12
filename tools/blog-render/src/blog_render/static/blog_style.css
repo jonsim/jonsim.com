@@ -78,9 +78,7 @@
 }
 
 .metadata dd span {
-  font-size: 12px;
   background: var(--paper);
-  margin: 0 4px;
 }
 
 .metadata div {
@@ -122,7 +120,7 @@
 
 .blog-body h1 {
   display: inline-block;
-  margin: 0;
+  margin: 80px 0 0 0;
   font-size: 40px;
   letter-spacing: -.05em;
   font-weight: 500;

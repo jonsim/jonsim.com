@@ -51,13 +51,23 @@
       {% if metadata %}
       <dl class="metadata">
         {% for label, value in metadata.all_fields() %}
-        {% if label not in ('title', 'description', 'images') and value %}
+        {% if label not in ('title', 'description', 'images', 'tags') and value %}
         <div>
           <dt>{{ label.replace('_', ' ').title() }}</dt>
           <dd>{{ value }}</dd>
         </div>
         {% endif %}
         {% endfor %}
+        {% if metadata.tags %}
+        <div>
+          <dt>Tags</dt>
+          <dd class="tags">
+            {% for tag in metadata.tags %}
+            <span>{{ tag }}</span>
+            {% endfor %}
+          </dd>
+        </div>
+        {% endif %}
       </dl>
       {% endif %}
     </div>

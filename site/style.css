@@ -424,7 +424,7 @@ section {
 }
 
 .tags span {
-  font: 11px var(--mono-font);
+  font: 12px var(--mono-font);
   color: var(--muted-darker);
   background: var(--bg);
   padding: 3px 8px;
@@ -563,7 +563,6 @@ section {
 }
 
 .project-row .row-meta span {
-  font-size: 12px;
   background: var(--paper);
 }
 
@@ -577,7 +576,7 @@ section {
 
 .project-row:hover .row-meta::after {
   color: var(--accent);
-  transform: translateX(3px)
+  transform: translateX(5px)
 }
 
 
