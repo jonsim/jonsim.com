@@ -308,20 +308,20 @@ section {
 
 .section-head {
   display: flex;
-  justify-content: space-between;
+  justify-content: right;
   align-items: end;
-  margin-bottom: 28px
+  gap: 20px;
+  margin-bottom: 30px;
 }
 
 .section-head h2 {
-  margin: 0;
+  margin: 0 auto 0 0;
   font-size: 40px;
   letter-spacing: -.05em;
   font-weight: 500;
   border-bottom: 2px solid var(--accent);
   /* color: var(--accent); */
 }
-
 
 .section-external-link {
   margin: 0;
@@ -433,7 +433,7 @@ section {
   margin-top: 24px;
   /* padding-top: 13px; */
   /* border-top: 1px solid var(--line); */
-  font: 11px var(--mono-font);
+  font: 12px var(--mono-font);
   color: var(--muted)
 }
 
