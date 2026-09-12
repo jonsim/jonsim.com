@@ -11,6 +11,8 @@ from pathlib import Path
 
 from cook_render.render import (
     render_index,
+    render_index_by_ingredient,
+    render_index_by_time,
     render_recipe,
 )
 
@@ -155,14 +157,16 @@ def main(argv=None):
     content = static_dir.joinpath('recipe_style.css').read_text(encoding='utf-8')
     (output_dir / 'recipe_style.css').write_text(content, encoding='utf-8')
 
-    # Output the index page.
+    # Output the index pages.
     index_html = render_index(recipe_items)
     (output_dir / 'index.html').write_text(index_html, encoding='utf-8')
 
-    # TODO: more index pages.
-    # ingredient_index_html = render_index_by_ingredient(recipe_items)
-    # (output_dir / 'index_by_ingredient.html').write_text(
-    #     ingredient_index_html, encoding='utf-8'
-    # )
+    ingredient_index_html = render_index_by_ingredient(recipe_items)
+    (output_dir / 'index_by_ingredient.html').write_text(
+        ingredient_index_html, encoding='utf-8'
+    )
+
+    time_index_html = render_index_by_time(recipe_items)
+    (output_dir / 'index_by_time.html').write_text(time_index_html, encoding='utf-8')
 
     return 1 if has_errors else 0

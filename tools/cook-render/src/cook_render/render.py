@@ -25,6 +25,18 @@ COURSE_ORDER = [
     'Drinks',
 ]
 
+TIME_ORDER = {
+    '< 15 minutes': lambda t: t < 15,
+    '15-30 minutes': lambda t: t >= 15 and t < 30,
+    '30-45 minutes': lambda t: t >= 30 and t < 45,
+    '45-60 minutes': lambda t: t >= 45 and t < 60,
+    '1-1½ hours': lambda t: t >= 60 and t < 90,
+    '1½-2 hours': lambda t: t >= 90 and t < 120,
+    '2-3 hours': lambda t: t >= 120 and t < 180,
+    '> 3 hours': lambda t: t > 180,
+    'Unknown': lambda t: t is None,
+}
+
 KNOWN_COURSES = {
     'breakfast': 'Breakfast',
     'brunch': 'Brunch',
@@ -321,6 +333,12 @@ class Metadata:
         )
 
 
+@dataclass(frozen=True)
+class RecipeReference:
+    metadata: Metadata
+    href: str
+
+
 def _format_number(number):
     """Format Cooklang's regular and fractional JSON number variants."""
     if not isinstance(number, dict):
@@ -535,6 +553,10 @@ def _group_sort_key(name):
     return (1, name)
 
 
+def _time_sort_key(band: str):
+    return list(TIME_ORDER).index(band)
+
+
 def render_index(recipe_items: list[dict]) -> str:
     """Render an index page listing all recipes grouped by course."""
     grouped = {}
@@ -575,23 +597,59 @@ def render_index_by_ingredient(recipe_items: list[dict]) -> str:
     ingredient_map = {}
     for item in recipe_items:
         metadata = Metadata.from_recipe(item.get('recipe', {}))
-        recipe_title = metadata.title or item.get('href', 'Recipe')
+        recipe_reference = RecipeReference(metadata, item.get('href', '#'))
         seen_for_recipe = set()
         for ingredient in item.get('recipe', {}).get('ingredients', []):
             name = (ingredient.get('name') or ingredient.get('alias') or '').strip()
-            normalized = name.lower()
-            if not name or normalized in seen_for_recipe:
+            name = name.lower().capitalize()
+            if not name or name in seen_for_recipe:
                 continue
-            seen_for_recipe.add(normalized)
-            entry = ingredient_map.setdefault(
-                normalized, {'term': name.capitalize(), 'recipes': []}
+            seen_for_recipe.add(name)
+            ingredient_map.setdefault(name[0], {}).setdefault(name, []).append(
+                recipe_reference
             )
-            entry['recipes'].append(
-                {'title': recipe_title, 'href': item.get('href', '#')}
+
+    ingredient_map = dict(sorted(ingredient_map.items()))
+    for initial in ingredient_map:
+        ingredient_map[initial] = dict(sorted(ingredient_map[initial].items()))
+        for ingredient in ingredient_map[initial]:
+            ingredient_map[initial][ingredient].sort(
+                key=lambda r: r.metadata.title.lower()
             )
-    ingredients = sorted(ingredient_map.values(), key=lambda item: item['term'].lower())
-    for ingredient in ingredients:
-        ingredient['recipes'].sort(key=lambda recipe: recipe['title'].lower())
+
     return TEMPLATES.get_template('index_by_ingredient.html').render(
-        ingredients=ingredients
+        ingredients=ingredient_map
     )
+
+
+def render_index_by_time(recipe_items: list[dict]) -> str:
+    """Render an index page listing all recipes grouped by ingredient."""
+
+    recipe_map = {}
+    for item in recipe_items:
+        group = _recipe_group(item)
+        metadata = Metadata.from_recipe(item.get('recipe', {}))
+        recipe_reference = RecipeReference(metadata, item.get('href', '#'))
+        if metadata.total_time is None:
+            time_band = 'Unknown'
+        else:
+            for band, rule in TIME_ORDER.items():
+                if rule(metadata.total_time.total_minutes):
+                    time_band = band
+                    break
+            else:
+                assert 'Invalid TIME_ORDER map'
+
+        recipe_map.setdefault(group, {}).setdefault(time_band, []).append(
+            recipe_reference
+        )
+
+    recipe_map = dict(sorted(recipe_map.items(), key=lambda k: _group_sort_key(k[0])))
+    for group in recipe_map:
+        recipe_map[group] = dict(
+            sorted(recipe_map[group].items(), key=lambda k: _time_sort_key(k[0]))
+        )
+        for time_band in recipe_map[group]:
+            recipe_map[group][time_band].sort(key=lambda r: r.metadata.title.lower())
+
+    return TEMPLATES.get_template('index_by_time.html').render(groups=recipe_map)

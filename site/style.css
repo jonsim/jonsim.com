@@ -533,9 +533,17 @@ nav a:hover {
 
 .project-list {
   list-style: none;
-  margin: 0;
-  padding: 0;
+  margin: 0 0 20px 0;
+  padding: 0 20px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 6px;
 }
+
+.project-list:last-child {
+  margin-bottom: 0;
+}
+
 
 .project-list li {
   border-bottom: 1px solid var(--line)
@@ -591,7 +599,7 @@ nav a:hover {
 }
 
 .project-row .row-meta span {
-  background: var(--paper);
+  background: var(--bg);
 }
 
 .project-row .row-meta::after {
@@ -610,10 +618,67 @@ nav a:hover {
 
 
 /*
+ * Definition list
+ */
+
+.definition-list {
+  list-style: none;
+  margin: 0 0 20px 0;
+  padding: 0 20px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.definition-list:last-child {
+  margin-bottom: 0;
+}
+
+.definition-list li {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 20px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.definition-list li:last-child {
+    border-bottom: none;
+}
+
+.definition-list .term {
+  font-style: italic;
+  font-size: 18px;
+}
+
+.definition-list .defs {
+  font-size: 14px;
+}
+
+.definition-list .defs p {
+  padding: 0 0 10px 0;
+  margin: 0;
+}
+
+.definition-list .defs p:last-child {
+  padding-bottom: 0;
+}
+
+.definition-list .defs a {
+  color: var(--muted-darker);
+}
+
+.definition-list .defs a:hover {
+  color: var(--accent);
+}
+
+
+
+/*
  * Responsive adjustments
  */
 
-@media(max-width:820px) {
+@media(max-width:800px) {
   .wrap {
     width: min(var(--max), calc(100% - 40px))
   }
@@ -628,5 +693,12 @@ nav a:hover {
   .feature-tile,
   .recipes {
     grid-template-columns: 1fr
+  }
+}
+
+@media (max-width: 600px) {
+  .definition-list li {
+    grid-template-columns: 1fr;
+    gap: 0.4rem;
   }
 }

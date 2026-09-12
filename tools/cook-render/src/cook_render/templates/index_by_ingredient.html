@@ -1,48 +1,81 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ title }}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>jonsim | recipes</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Goudy+Bookletter+1911&display=swap"
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap"
     rel="stylesheet">
-  <link href="style.css" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css2?family=Lekton:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="../style.css">
 </head>
 
 <body>
-  <div class="book">
-    <header class="topbar">
-      <div class="mark">jonsim <span>kitchen manual</span></div>
+  <header>
+    <div class="wrap nav">
+      <a class="brand" href="../index.html">jonsim</a>
       <nav>
-        <a class="nav-link" href="index.html">Contents</a>
-        <a class="nav-link is-active" href="index_by_ingredient.html">Ingredient Index</a>
-        <a class="nav-link" href="index_by_time.html">Time Index</a>
+        <a href="../code/index.html">code</a>
+        <a href="../design/index.html">design</a>
+        <a href="../woodwork/index.html">woodwork</a>
+        <a href="../blog/index.html">blog</a>
+        <a href="../recipes/index.html" class="is-active">recipes</a>
       </nav>
-    </header>
-    <main>
-      <section id="ingredient-index">
-        <div class="page-intro">
-          <h1>Index by Ingredient</h1>
+    </div>
+  </header>
+  <main class="wrap">
+    <section class="hero">
+      <h1>Things I <span>cook</span>.</h1>
+      <div class="hero-copy">
+        <p>
+          Sorted <span class="hero-copy-label">by ingredient</span>. All vegetarian, often vegan.
+        </p>
+        <div class="hero-links">
+          <a href="index.html">by course</a>
+          <a href="index_by_time.html">by time</a>
+          <a href="https://github.com/jonsim/recipes" target="_blank">Source</a>
         </div>
-        <ul class="ingredient-index">
-{% for ingredient in ingredients %}
-          <li>
-            <span class="term">{{ ingredient.term }}</span>
-            <span class="refs">
-{% for recipe in ingredient.recipes %}
-              <p><a href="{{ recipe.href }}">{{ recipe.title }}</a></p>
-{% endfor %}
-            </span>
-          </li>
-{% endfor %}
-        </ul>
-      </section>
-    </main>
-  </div>
+      </div>
+    </section>
+    <div class="hero-rule"></div>
+
+    <nav class="page-nav" aria-label="Jump to course">
+      <span class="page-nav-label">Jump to</span>
+      {% for initial in ingredients %}
+        <a href="#ingredients-{{ initial }}">{{ initial }}</a>
+      {% endfor %}
+    </nav>
+
+    <section id="ingredient-index">
+      <div class="section-head">
+        <h2>Index by Ingredient</h2>
+      </div>
+
+      {% for initial in ingredients %}
+      <ul class="definition-list" id="ingredients-{{ initial }}">
+        {% for ingredient in ingredients[initial] %}
+        <li>
+          <span class="term">{{ ingredient }}</span>
+          <span class="defs">
+            {% for recipe in ingredients[initial][ingredient] %}
+            <p><a href="{{ recipe.href }}">{{ recipe.metadata.title }}</a></p>
+            {% endfor %}
+          </span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% endfor %}
+    </section>
+
+  </main>
+  <footer>
+    <div class="wrap">© Jonathan Simmonds</div>
+  </footer>
 </body>
 
 </html>

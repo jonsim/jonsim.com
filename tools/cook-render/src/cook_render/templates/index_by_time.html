@@ -33,55 +33,45 @@
       <h1>Things I <span>cook</span>.</h1>
       <div class="hero-copy">
         <p>
-          Sorted <span class="hero-copy-label">by course</span>. All vegetarian, often vegan.
+          Sorted <span class="hero-copy-label">by time</span>. All vegetarian, often vegan.
         </p>
         <div class="hero-links">
+          <a href="index.html">by course</a>
           <a href="index_by_ingredient.html">by ingredient</a>
-          <a href="index_by_time.html">by time</a>
           <a href="https://github.com/jonsim/recipes" target="_blank">Source</a>
         </div>
       </div>
     </section>
     <div class="hero-rule"></div>
 
-    {% if groups %}
     <nav class="page-nav" aria-label="Jump to course">
       <span class="page-nav-label">Jump to</span>
       {% for group in groups %}
-      <a href="#{{ group.id }}">{{ group.name }}</a>
+      <a href="#{{ group.lower().replace(' ', '_') }}">{{ group }}</a>
       {% endfor %}
     </nav>
 
     {% for group in groups %}
-    <section id="{{ group.id }}">
+    <section id="{{ group.lower().replace(' ', '_') }}">
       <div class="section-head">
-        <h2>{{ group.name }}</h2>
+        <h2>{{ group }}</h2>
       </div>
-      <ol class="project-list">
-        {% for recipe in group.recipes %}
+
+      <ul class="definition-list">
+        {% for time_band in groups[group] %}
         <li>
-          <a class="project-row" href="{{ recipe.href }}">
-            <div class="row-main">
-              <h3 class="row-title">{{ recipe.title }}</h3>
-              {% if recipe.description %}
-              <p class="row-desc">{{ recipe.description }}</p>
-              {% endif %}
-            </div>
-            <div class="row-meta tags">
-              {% if recipe.time %}
-              <span class="row-time">{{ recipe.time }}</span>
-              {% endif %}
-              {% if recipe.servings %}
-              <span class="row-serves">{{ recipe.servings }}</span>
-              {% endif %}
-            </div>
-          </a>
+          <span class="term">{{ time_band }}</span>
+          <span class="defs">
+            {% for recipe in groups[group][time_band] %}
+              <p><a href="{{ recipe.href }}">{{ recipe.metadata.title }}</a></p>
+            {% endfor %}
+          </span>
         </li>
         {% endfor %}
       </ol>
     </section>
     {% endfor %}
-    {% endif %}
+
   </main>
   <footer>
     <div class="wrap">© Jonathan Simmonds</div>
