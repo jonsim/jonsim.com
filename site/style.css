@@ -43,6 +43,10 @@ a {
   margin: auto
 }
 
+.mono {
+  font-family: var(--mono-font);
+}
+
 h1 {
   font-family: var(--body-font);
   font-size: clamp(54px, 8vw, 102px);
@@ -369,7 +373,6 @@ section {
   background: var(--paper);
   border: 1px solid var(--line);
   min-height: 340px;
-  padding: 25px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -384,40 +387,27 @@ section {
   border-color: var(--accent);
 }
 
-.project-external-link {
-  display: inline-block;
-}
-
-.project-external-link::after {
-  content: " ↗";
-  display: inline-block;
-  width: 1ch;
-  font-size: 15px;
-  margin-top: -1em;
-  margin-bottom: -1em;
-  padding-left: 0.5ch;
-}
-
-.project-tile:hover .project-external-link {
-  transition: all 0.3s ease;
-  color: var(--accent);
-}
-
-.project-tile:hover .project-external-link::after {
-  transition: all 0.3s ease;
-  transform: translate(3px, -2px);
-  color: var(--accent);
+.project-tile img {
+  height: 200px;
+  object-fit: cover;
+  object-position: bottom;
+  overflow: hidden;
 }
 
 .visual {
-  height: 145px;
+  height: 200px;
   background: #f0edeb;
   position: relative;
-  overflow: hidden
+  overflow: hidden;
+}
+
+.tile-body {
+  padding: 25px;
+  margin-bottom: auto;
 }
 
 .project-grid h3 {
-  margin: 24px 0 7px;
+  margin: 0 0 10px;
   font-size: 32px;
   letter-spacing: -.05em;
   font-weight: 500;
@@ -426,7 +416,7 @@ section {
 .project-grid p {
   margin: 0;
   color: var(--muted-darker);
-  max-width: 42ch;
+  text-align: justify;
   font-size: 14px;
   line-height: 1.55
 }
@@ -434,9 +424,8 @@ section {
 .tile-foot {
   display: flex;
   justify-content: space-between;
-  margin-top: 24px;
-  /* padding-top: 13px; */
-  /* border-top: 1px solid var(--line); */
+  padding: 25px;
+  border-top: 1px solid var(--line);
   font: 12px var(--mono-font);
   color: var(--muted)
 }
