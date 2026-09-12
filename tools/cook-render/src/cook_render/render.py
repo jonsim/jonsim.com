@@ -535,7 +535,7 @@ def _group_sort_key(name):
     return (1, name)
 
 
-def render_index(recipe_items: list[dict], title: str = 'jonsim') -> str:
+def render_index(recipe_items: list[dict]) -> str:
     """Render an index page listing all recipes grouped by course."""
     grouped = {}
     for item in recipe_items:
@@ -567,12 +567,10 @@ def render_index(recipe_items: list[dict], title: str = 'jonsim') -> str:
                 'recipes': recipes,
             }
         )
-    return TEMPLATES.get_template('index.html').render(title=title, groups=groups)
+    return TEMPLATES.get_template('index.html').render(groups=groups)
 
 
-def render_index_by_ingredient(
-    recipe_items: list[dict], title: str = 'Materia — A Kitchen Manual'
-) -> str:
+def render_index_by_ingredient(recipe_items: list[dict]) -> str:
     """Render an index page listing all recipes grouped by ingredient."""
     ingredient_map = {}
     for item in recipe_items:
@@ -595,5 +593,5 @@ def render_index_by_ingredient(
     for ingredient in ingredients:
         ingredient['recipes'].sort(key=lambda recipe: recipe['title'].lower())
     return TEMPLATES.get_template('index_by_ingredient.html').render(
-        title=title, ingredients=ingredients
+        ingredients=ingredients
     )

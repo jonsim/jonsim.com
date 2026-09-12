@@ -349,6 +349,10 @@ section {
   transform: translate(3px, -2px);
 }
 
+.section-copy p {
+  text-align: justify;
+}
+
 
 
 /*
@@ -444,6 +448,31 @@ section {
   padding: 3px 8px;
   border-radius: 4px;
   border: 1px solid var(--line);
+}
+
+.project-external-link {
+  display: inline-block;
+}
+
+.project-external-link::after {
+  content: " ↗";
+  display: inline-block;
+  width: 1ch;
+  font-size: 15px;
+  margin-top: -1em;
+  margin-bottom: -1em;
+  padding-left: 0.5ch;
+}
+
+.project-tile:hover .project-external-link {
+  transition: all 0.3s ease;
+  color: var(--accent);
+}
+
+.project-tile:hover .project-external-link::after {
+  transition: all 0.3s ease;
+  transform: translate(3px, -2px);
+  color: var(--accent);
 }
 
 
