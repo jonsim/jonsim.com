@@ -238,13 +238,27 @@ nav a:hover {
 .back-link {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 2px;
   font-size: 13px;
   color: var(--muted)
 }
 
 .back-link:hover {
   color: var(--accent)
+}
+
+.back-link::before {
+  content: "←";
+  font-size: 16px;
+  margin-bottom: 6px;
+  display: inline-block;
+  color: var(--muted);
+  transition: all 0.2s ease;
+}
+
+.back-link:hover::before {
+  color: var(--accent);
+  transform: translateX(-3px)
 }
 
 
