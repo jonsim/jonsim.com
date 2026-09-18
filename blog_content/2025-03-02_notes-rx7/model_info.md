@@ -5,9 +5,6 @@ description: A deep dive into the different variants of the Mazda FD3S RX-7.
 tags: Notes, Cars, JDM
 ---
 
-[TOC]
-
-
 This post is a deep dive into the different variants of the Mazda FD3S RX-7.
 I put this together as was in the market for one and I couldn't find a reliable
 source of detailed, collected information.
@@ -19,22 +16,22 @@ into eight series, which are sub-divided yet further into separate versions
 based on chassic number:
 
 - First Generation / FB (1978-1985)
-  - Series 1 (1978-1980)
-  - Series 2 (1981-1983)
-  - Series 3 (1984-1985)
+    - Series 1 (1978-1980)
+    - Series 2 (1981-1983)
+    - Series 3 (1984-1985)
 - Second Generation / FC (1985-1991)
-  - Series 4 (1985-1989)
-  - Series 5 (1989-1991)
+    - Series 4 (1985-1989)
+    - Series 5 (1989-1991)
 - Third Generation / FD (1991-2002)
-  - Series 6 (1991-1995)
-    - Version 1 (FD3S-1xxxx) (Dec 1991 - Jul 1993)
-    - Version 2 (FD3S-2xxxx) (Aug 1993 - Feb 1995)
-    - Version 3 (FD3S-3xxxx) (Mar 1995 - Dec 1995)
-  - Series 7 (1996-1998)
-    - Version 4 (FD3S-4xxxx) (Jan 1996 - Dec 1998)
-  - Series 8 (1998-2002)
-    - Version 5 (FD3S-5xxxx) (Jan 1999 - Sep 2000)
-    - Version 6 (FD3S-6xxxx) (Oct 2000 - Dec 2002)
+    - Series 6 (1991-1995)
+        - Version 1 (FD3S-1xxxx) (Dec 1991 - Jul 1993)
+        - Version 2 (FD3S-2xxxx) (Aug 1993 - Feb 1995)
+        - Version 3 (FD3S-3xxxx) (Mar 1995 - Dec 1995)
+    - Series 7 (1996-1998)
+        - Version 4 (FD3S-4xxxx) (Jan 1996 - Dec 1998)
+    - Series 8 (1998-2002)
+        - Version 5 (FD3S-5xxxx) (Jan 1999 - Sep 2000)
+        - Version 6 (FD3S-6xxxx) (Oct 2000 - Dec 2002)
 
 This is the last time in this post I will mention the FB or FC; the rest of the
 post is dedicated to the FD.
