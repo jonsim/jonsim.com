@@ -18,3 +18,7 @@ htmlcov/
 
 # The site zip is generated during deployment
 /site.zip
+
+# Christmas list deployment secrets and private database exports
+/site/xmas_list/database_config.php
+/site/xmas_list/xmas_list.sql
