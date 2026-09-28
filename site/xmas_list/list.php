@@ -179,7 +179,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Lekton:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" type="text/css" href="../style.css">
-  <link rel="stylesheet" type="text/css" href="list_style.css">
+  <link rel="stylesheet" type="text/css" href="list_style.css?v=2">
   <script src="https://use.fontawesome.com/141f2d0518.js"></script>
   <script>
     function editItem(item_id, item_description) {
@@ -261,13 +261,12 @@
     <?php
         if ($show_login) {
             echo '<div class="login-card">';
-            echo '<h2>Open the Christmas list</h2>';
-            echo '<p>Choose your name and enter your memorable phrase. Capitalisation, spaces and punctuation do not matter.</p>';
+            echo '<h2>Login</h2>';
             if ($login_error !== null) {
                 echo '<p class="login-error" role="alert">'.htmlspecialchars($login_error, ENT_QUOTES, 'UTF-8').'</p>';
             }
             echo '<form class="login-form" method="POST" action="list.php">';
-            echo '<label for="user_id">Your name</label>';
+            echo '<label for="user_id">Name:</label>';
             echo '<select id="user_id" name="user_id" required>';
             echo '<option value="" selected disabled>Select your name&hellip;</option>';
             foreach ($login_users as $user) {
@@ -277,9 +276,9 @@
                 echo '<option value="'.(int) $user['user_id'].'"'.$selected.'>'.htmlspecialchars($display_name, ENT_QUOTES, 'UTF-8').'</option>';
             }
             echo '</select>';
-            echo '<label for="phrase">Memorable phrase</label>';
+            echo '<label for="phrase">Phrase:</label>';
             echo '<input id="phrase" name="phrase" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" required>';
-            echo '<button class="login-submit" type="submit" name="login">Show the list</button>';
+            echo '<button class="login-submit" type="submit" name="login">Login</button>';
             echo '</form>';
             echo '</div>';
         } else {

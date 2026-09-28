@@ -70,13 +70,14 @@
 }
 
 .login-form {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .login-form label {
-    grid-column: 1 / -1;
+    display: block;
+    margin-top: 4px;
     font-weight: 600;
 }
 
@@ -90,14 +91,14 @@
     border: 1px solid var(--muted-darker);
 }
 
-.login-form select {
-    grid-column: 1 / -1;
-}
-
 button.login-submit {
-    width: auto;
+    display: block;
+    width: 100%;
     height: auto;
+    min-height: 40px;
+    margin-top: 8px;
     padding: 8px 14px;
+    white-space: nowrap;
 }
 
 .current-identity {
@@ -129,15 +130,6 @@ button.logout-button:hover {
     background: none;
     border: 0;
 }
-
-@media (max-width: 520px) {
-    .login-form {
-        grid-template-columns: 1fr;
-    }
-}
-
-
-
 
 /*
  * The list itself
