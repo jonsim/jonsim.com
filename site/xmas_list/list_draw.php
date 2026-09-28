@@ -55,7 +55,8 @@ function drawDeleteButton($item_id) {
     $output  = '<button type="submit" ';
     $output .=   'title="Delete this entry" ';
     $output .=   'id="'  .formId($DELETE_BASE_ID, $item_id).'" ';
-    $output .=   'name="'.formId($DELETE_BASE_ID, $item_id).'">';
+    $output .=   'name="'.formId($DELETE_BASE_ID, $item_id).'" ';
+    $output .=   'onclick="return window.confirm(\'Delete this item?\')">';
     $output .= '<i class="fa fa-trash fa-fw"></i>';
     $output .= '</button>';
     return $output;
