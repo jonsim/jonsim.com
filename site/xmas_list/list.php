@@ -12,6 +12,8 @@
 
     $AUTH_COOKIE = 'xmas_list_auth';
     $AUTH_COOKIE_LIFETIME = 60 * 60 * 24 * 365;
+    $MAX_LOGIN_FAILURES = 5;
+    $LOGIN_LOCK_SECONDS = 5 * 60;
 
     # Disable page caching.
     header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
@@ -62,6 +64,14 @@
         return (int) $parts[0];
     }
 
+    session_set_cookie_params(array(
+        'path' => authCookiePath(),
+        'secure' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ));
+    session_start();
+
     # Handle the database interface.
     $config = dbLoadConfig();
     if (empty($config['auth_cookie_secret']) || empty($config['auth_users']) || !is_array($config['auth_users'])) {
@@ -87,28 +97,45 @@
 
     $login_error = null;
     if ($this_user === null && isset($_POST['login'])) {
-        $login_user_id = filter_input(INPUT_POST, 'user_id', FILTER_VALIDATE_INT);
-        $login_user = ($login_user_id === false || $login_user_id === null)
-            ? null
-            : dbGetUser($db_handle, $login_user_id);
-        $phrase = (isset($_POST['phrase']) && is_string($_POST['phrase']))
-            ? normalisePhrase($_POST['phrase'])
-            : '';
+        $locked_until = isset($_SESSION['login_locked_until']) ? (int) $_SESSION['login_locked_until'] : 0;
+        if ($locked_until > time()) {
+            $minutes = (int) ceil(($locked_until - time()) / 60);
+            $login_error = 'Too many unsuccessful attempts. Please try again in '.$minutes.' minute'.($minutes === 1 ? '.' : 's.');
+        } else {
+            if ($locked_until !== 0) {
+                unset($_SESSION['login_failures'], $_SESSION['login_locked_until']);
+            }
 
-        if ($login_user !== null && isset($config['auth_users'][$login_user['name']])) {
-            $auth_user = $config['auth_users'][$login_user['name']];
-            if (isset($auth_user['phrase_hash']) && password_verify($phrase, $auth_user['phrase_hash'])) {
-                $expires = time() + $AUTH_COOKIE_LIFETIME;
-                setAuthCookie(
-                    $AUTH_COOKIE,
-                    createAuthCookie($login_user_id, $expires, $config['auth_cookie_secret']),
-                    $expires
-                );
-                redirectToList();
+            $login_user_id = filter_input(INPUT_POST, 'user_id', FILTER_VALIDATE_INT);
+            $login_user = ($login_user_id === false || $login_user_id === null)
+                ? null
+                : dbGetUser($db_handle, $login_user_id);
+            $phrase = (isset($_POST['phrase']) && is_string($_POST['phrase']))
+                ? normalisePhrase($_POST['phrase'])
+                : '';
+
+            if ($login_user !== null && isset($config['auth_users'][$login_user['name']])) {
+                $auth_user = $config['auth_users'][$login_user['name']];
+                if (isset($auth_user['phrase_hash']) && password_verify($phrase, $auth_user['phrase_hash'])) {
+                    unset($_SESSION['login_failures'], $_SESSION['login_locked_until']);
+                    $expires = time() + $AUTH_COOKIE_LIFETIME;
+                    setAuthCookie(
+                        $AUTH_COOKIE,
+                        createAuthCookie($login_user_id, $expires, $config['auth_cookie_secret']),
+                        $expires
+                    );
+                    redirectToList();
+                }
+            }
+
+            $_SESSION['login_failures'] = (isset($_SESSION['login_failures']) ? (int) $_SESSION['login_failures'] : 0) + 1;
+            if ($_SESSION['login_failures'] >= $MAX_LOGIN_FAILURES) {
+                $_SESSION['login_locked_until'] = time() + $LOGIN_LOCK_SECONDS;
+                $login_error = 'Too many unsuccessful attempts. Please try again in 5 minutes.';
+            } else {
+                $login_error = 'That name and memorable phrase do not match. Please try again.';
             }
         }
-
-        $login_error = 'That name and memorable phrase do not match. Please try again.';
     }
 
     $show_login = ($this_user === null);
