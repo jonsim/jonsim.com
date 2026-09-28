@@ -5,17 +5,37 @@ function formId($base, $id) {
 }
 
 function autoLink($text) {
-    # Automatically extract all URLs and replace them with links.
-    $regex = "/(http|https|ftp|ftps)\:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(\/\S*[^\)\s])?/";
-    return preg_replace($regex, '<a href="$0" target="_blank">$0</a>', $text);
+    # Escape all text while turning absolute URLs into safe links. Keeping the
+    # escaping here avoids running a URL regex over already-created HTML entities.
+    $regex = '~\b(?:https?|ftps?)://[^\s<>"\']+~iu';
+    preg_match_all($regex, $text, $matches, PREG_OFFSET_CAPTURE);
+
+    $output = '';
+    $offset = 0;
+    foreach ($matches[0] as $match) {
+        $url = $match[0];
+        $url_offset = $match[1];
+        $output .= htmlspecialchars(substr($text, $offset, $url_offset - $offset), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+
+        # Do not absorb punctuation that ends a sentence containing the URL.
+        $trailing = '';
+        while ($url !== '' && preg_match('/[\.,;:!?\)\]\}]$/u', $url, $trailing_match)) {
+            $trailing = $trailing_match[0] . $trailing;
+            $url = substr($url, 0, -strlen($trailing_match[0]));
+        }
+
+        $escaped_url = htmlspecialchars($url, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $output .= '<a href="'.$escaped_url.'" target="_blank" rel="noopener noreferrer">'.$escaped_url.'</a>';
+        $output .= htmlspecialchars($trailing, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $offset = $url_offset + strlen($match[0]);
+    }
+
+    $output .= htmlspecialchars(substr($text, $offset), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    return $output;
 }
 
 function drawDescription($item_id, $item_description, $is_this_user, $is_bought) {
     global $DESCRIPTION_BASE_ID;
-    # When *displaying* the data, escape html special characters to prevent XSS.
-    # All quotes can (and should) be left as is since we are just splatting them
-    # verbatim onto the page.
-    $item_description = htmlspecialchars($item_description);
     # Print the item description (optionally crossed through).
     $strike = (!$is_this_user && $is_bought);
     $output  = '<span class="listcontent" ';
