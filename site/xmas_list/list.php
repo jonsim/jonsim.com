@@ -10,7 +10,8 @@
     include 'database_access.php';
     include 'list_draw.php';
 
-    $not_logged_in_redirect = 'not_logged_in.html';
+    $AUTH_COOKIE = 'xmas_list_auth';
+    $AUTH_COOKIE_LIFETIME = 60 * 60 * 24 * 365;
 
     # Disable page caching.
     header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
@@ -18,65 +19,148 @@
     header("Pragma: no-cache");
     header("Expires: Sun, 01 Jan 2014 00:00:00 GMT");
 
-    # Handle GET requests.
-    # First ensure a user has been specified.
-    if (isset($_GET['user'])) {
-        $this_user_name = $_GET['user'];
-    } else {
-        # Some sneaky monkey is trying to get here without being logged in. Back
-        # to square one wise guy.
-        header('Location: ' . filter_var($not_logged_in_redirect, FILTER_SANITIZE_URL));
+    function redirectToList() {
+        header('Location: list.php', true, 303);
+        exit;
     }
-    # Set the alias flag. This flag is used to allow 'alias' accounts managed by
-    # a single user and will prevent bought status being shown at all (otherwise
-    # it would be shown including on the user's other accounts).
-    $is_alias_user = isset($_GET['alias']);
+
+    function authCookiePath() {
+        return rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/') . '/';
+    }
+
+    function setAuthCookie($name, $value, $expires) {
+        setcookie($name, $value, array(
+            'expires' => $expires,
+            'path' => authCookiePath(),
+            'secure' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
+            'httponly' => true,
+            'samesite' => 'Lax'
+        ));
+    }
+
+    function normalisePhrase($phrase) {
+        return preg_replace('/[^a-z0-9]/', '', strtolower($phrase));
+    }
+
+    function createAuthCookie($user_id, $expires, $secret) {
+        $payload = $user_id . '|' . $expires;
+        return $payload . '|' . hash_hmac('sha256', $payload, $secret);
+    }
+
+    function readAuthCookie($cookie, $secret) {
+        $parts = explode('|', $cookie);
+        if (count($parts) !== 3 || !ctype_digit($parts[0]) || !ctype_digit($parts[1])) {
+            return null;
+        }
+
+        $payload = $parts[0] . '|' . $parts[1];
+        $expected_signature = hash_hmac('sha256', $payload, $secret);
+        if ((int) $parts[1] < time() || !hash_equals($expected_signature, $parts[2])) {
+            return null;
+        }
+
+        return (int) $parts[0];
+    }
 
     # Handle the database interface.
+    $config = dbLoadConfig();
+    if (empty($config['auth_cookie_secret']) || empty($config['auth_users']) || !is_array($config['auth_users'])) {
+        throw new RuntimeException('Missing or incomplete Christmas list authentication configuration.');
+    }
     $db_handle = dbConnect();
-    # Check the user is valid.
-    $this_user_id = dbValidateUser($db_handle, $this_user_name);
-    # Redirect if invalid. This will be annoying during initial setup as it means
-    # you must have an entry in the database corresponding to the user in the GET.
-    if ($this_user_id < 0) {
-        header('Location: ' . filter_var($not_logged_in_redirect, FILTER_SANITIZE_URL));
+
+    if (isset($_POST['logout'])) {
+        setAuthCookie($AUTH_COOKIE, '', time() - 3600);
+        redirectToList();
+    }
+
+    $this_user = null;
+    if (isset($_COOKIE[$AUTH_COOKIE])) {
+        $cookie_user_id = readAuthCookie($_COOKIE[$AUTH_COOKIE], $config['auth_cookie_secret']);
+        if ($cookie_user_id !== null) {
+            $cookie_user = dbGetUser($db_handle, $cookie_user_id);
+            if ($cookie_user !== null && isset($config['auth_users'][$cookie_user['name']])) {
+                $this_user = $cookie_user;
+            }
+        }
+    }
+
+    $login_error = null;
+    if ($this_user === null && isset($_POST['login'])) {
+        $login_user_id = filter_input(INPUT_POST, 'user_id', FILTER_VALIDATE_INT);
+        $login_user = ($login_user_id === false || $login_user_id === null)
+            ? null
+            : dbGetUser($db_handle, $login_user_id);
+        $phrase = (isset($_POST['phrase']) && is_string($_POST['phrase']))
+            ? normalisePhrase($_POST['phrase'])
+            : '';
+
+        if ($login_user !== null && isset($config['auth_users'][$login_user['name']])) {
+            $auth_user = $config['auth_users'][$login_user['name']];
+            if (isset($auth_user['phrase_hash']) && password_verify($phrase, $auth_user['phrase_hash'])) {
+                $expires = time() + $AUTH_COOKIE_LIFETIME;
+                setAuthCookie(
+                    $AUTH_COOKIE,
+                    createAuthCookie($login_user_id, $expires, $config['auth_cookie_secret']),
+                    $expires
+                );
+                redirectToList();
+            }
+        }
+
+        $login_error = 'That name and memorable phrase do not match. Please try again.';
+    }
+
+    $show_login = ($this_user === null);
+    $is_alias_user = false;
+    if (!$show_login) {
+        $this_user_id = (int) $this_user['user_id'];
+        $this_user_name = $this_user['name'];
+        $auth_user = $config['auth_users'][$this_user_name];
+        $is_alias_user = !empty($auth_user['alias']);
     }
 
     # Handle POST requests.
     # Handle adds
-    if (isset($_POST[$ADD_BASE_ID])) {
+    if (!$show_login && isset($_POST[$ADD_BASE_ID])) {
         $item_description = $_POST[$ADD_BASE_ID];
         if ($item_description != null and !empty($item_description)) {
             dbAddItem($db_handle, $this_user_id, $item_description);
         }
     }
     # Handle deletes
-    if (isset($_POST[$DELETE_BASE_ID])) {
+    if (!$show_login && isset($_POST[$DELETE_BASE_ID])) {
         foreach ($_POST[$DELETE_BASE_ID] as $item_id=>$item_data) {
-            dbDeleteItem($db_handle, $item_id);
+            dbDeleteItem($db_handle, $this_user_id, $item_id);
         }
     }
     # Handle edits
-    if (isset($_POST[$EDIT_BASE_ID])) {
+    if (!$show_login && isset($_POST[$EDIT_BASE_ID])) {
         foreach ($_POST[$EDIT_BASE_ID] as $item_id=>$item_data) {
-            dbEditItem($db_handle, $item_id, $item_data);
+            dbEditItem($db_handle, $this_user_id, $item_id, $item_data);
         }
     }
     # Handle boughts
-    if (isset($_POST[$BOUGHT_BASE_ID])) {
+    if (!$show_login && isset($_POST[$BOUGHT_BASE_ID])) {
         foreach ($_POST[$BOUGHT_BASE_ID] as $item_id=>$item_data) {
             dbMarkBought($db_handle, $this_user_id, $item_id);
         }
     }
     # Handle unboughts
-    if (isset($_POST[$UNBOUGHT_BASE_ID])) {
+    if (!$show_login && isset($_POST[$UNBOUGHT_BASE_ID])) {
         foreach ($_POST[$UNBOUGHT_BASE_ID] as $item_id=>$item_data) {
-            dbMarkUnbought($db_handle, $item_id);
+            dbMarkUnbought($db_handle, $this_user_id, $item_id);
         }
     }
 
-    # Now the database is up to date, get all list items.
-    $users_items = dbGetAllUsersItems($db_handle);
+    if ($show_login) {
+        $login_users = array_filter(dbGetUsers($db_handle), function ($user) use ($config) {
+            return isset($config['auth_users'][$user['name']]);
+        });
+    } else {
+        # Now the database is up to date, get all list items.
+        $users_items = dbGetAllUsersItems($db_handle);
+    }
 
 ?>
 <!doctype html>
@@ -175,53 +259,80 @@
       <div class="list-body">
 
     <?php
-        $form_redir_query = 'user='.$this_user_name;
-        if ($is_alias_user) {
-            $form_redir_query .= '&alias';
-        }
-        echo '<form id="list_form" method="POST" action="list.php?'.$form_redir_query.'" id="listForm">';
+        if ($show_login) {
+            echo '<div class="login-card">';
+            echo '<h2>Open the Christmas list</h2>';
+            echo '<p>Choose your name and enter your memorable phrase. Capitalisation, spaces and punctuation do not matter.</p>';
+            if ($login_error !== null) {
+                echo '<p class="login-error" role="alert">'.htmlspecialchars($login_error, ENT_QUOTES, 'UTF-8').'</p>';
+            }
+            echo '<form class="login-form" method="POST" action="list.php">';
+            echo '<label for="user_id">Your name</label>';
+            echo '<select id="user_id" name="user_id" required>';
+            echo '<option value="" selected disabled>Select your name&hellip;</option>';
+            foreach ($login_users as $user) {
+                $auth_user = $config['auth_users'][$user['name']];
+                $display_name = isset($auth_user['display_name']) ? $auth_user['display_name'] : $user['name'];
+                $selected = (isset($_POST['user_id']) && (int) $_POST['user_id'] === (int) $user['user_id']) ? ' selected' : '';
+                echo '<option value="'.(int) $user['user_id'].'"'.$selected.'>'.htmlspecialchars($display_name, ENT_QUOTES, 'UTF-8').'</option>';
+            }
+            echo '</select>';
+            echo '<label for="phrase">Memorable phrase</label>';
+            echo '<input id="phrase" name="phrase" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" required>';
+            echo '<button class="login-submit" type="submit" name="login">Show the list</button>';
+            echo '</form>';
+            echo '</div>';
+        } else {
+            $display_name = isset($auth_user['display_name']) ? $auth_user['display_name'] : $this_user_name;
+            echo '<div class="current-identity">';
+            echo '<span>Viewing as <strong>'.htmlspecialchars($display_name, ENT_QUOTES, 'UTF-8').'</strong></span>';
+            echo '<form method="POST" action="list.php"><button class="logout-button" type="submit" name="logout">Not you?</button></form>';
+            echo '</div>';
 
-        # Add a hidden default button. This prevents accidentally performing
-        # random actions when pressing CR on some browsers which interpret CR as
-        # a submission of the first element.
-        echo '<button id="form_default" type="submit" value="default action"></button>';
+            echo '<form id="list_form" method="POST" action="list.php">';
 
-        foreach ($users_items as $user) {
-            $is_this_user = (strcmp($user['name'], $this_user_name) == 0);
+            # Add a hidden default button. This prevents accidentally performing
+            # random actions when pressing CR on some browsers which interpret CR as
+            # a submission of the first element.
+            echo '<button id="form_default" type="submit" value="default action"></button>';
 
-            echo '<h1>'.$user['name'].'</h1>';
-            echo '<ul>';
-            foreach ($user['items'] as $item) {
-                $item_id = $item['item_id'];
-                $is_bought = (strcmp($item['bought'], "1") == 0) && !$is_alias_user;
-                $buyer_is_this_user = (((int) $item['buyer_id']) == $this_user_id);
-                echo '<li>';
-                echo drawDescription($item_id, $item['description'], $is_this_user, $is_bought);
-                # Print the controls.
-                if ($is_this_user) {
-                    # If this is the current user - print edit and delete.
-                    echo drawEditButton($item_id, $item['description']);
-                    echo drawDeleteButton($item_id);
-                } else if (!$is_alias_user) {
-                    # Otherwise add the bought button if unbought, or un-buy if
-                    # bought and bought by the current user.
-                    if (!$is_bought) {
-                        echo drawBoughtButton($item_id);
-                    } else if ($buyer_is_this_user) {
-                        echo drawUnboughtButton($item_id);
+            foreach ($users_items as $user) {
+                $is_this_user = ((int) $user['user_id'] === $this_user_id);
+
+                echo '<h1>'.htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8').'</h1>';
+                echo '<ul>';
+                foreach ($user['items'] as $item) {
+                    $item_id = $item['item_id'];
+                    $is_bought = (strcmp($item['bought'], "1") == 0) && !$is_alias_user;
+                    $buyer_is_this_user = (((int) $item['buyer_id']) == $this_user_id);
+                    echo '<li>';
+                    echo drawDescription($item_id, $item['description'], $is_this_user, $is_bought);
+                    # Print the controls.
+                    if ($is_this_user) {
+                        # If this is the current user - print edit and delete.
+                        echo drawEditButton($item_id, $item['description']);
+                        echo drawDeleteButton($item_id);
+                    } else if (!$is_alias_user) {
+                        # Otherwise add the bought button if unbought, or un-buy if
+                        # bought and bought by the current user.
+                        if (!$is_bought) {
+                            echo drawBoughtButton($item_id);
+                        } else if ($buyer_is_this_user) {
+                            echo drawUnboughtButton($item_id);
+                        }
                     }
+                    echo '</li>';
                 }
-                echo '</li>';
+                # If current user, allow them to add to the list.
+                if ($is_this_user) {
+                    echo '<li>';
+                    echo drawAddButton();
+                    echo '</li>';
+                }
+                echo '</ul>';
             }
-            # If current user, allow them to add to the list.
-            if ($is_this_user) {
-                echo '<li>';
-                echo drawAddButton();
-                echo '</li>';
-            }
-            echo '</ul>';
+            echo '</form>';
         }
-        echo '</form>';
     ?>
 
       </div>

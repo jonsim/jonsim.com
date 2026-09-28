@@ -41,6 +41,101 @@
   /* color: var(--accent); */
 }
 
+.login-card {
+    max-width: 520px;
+    margin: 64px auto 20px;
+    padding: 28px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+}
+
+.login-card h2 {
+    margin: 0 0 10px;
+    font-size: 30px;
+    letter-spacing: -.04em;
+    font-weight: 500;
+}
+
+.login-card > p {
+    margin: 0 0 24px;
+    color: var(--muted-darker);
+}
+
+.login-card p.login-error {
+    padding: 10px 12px;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+}
+
+.login-form {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+}
+
+.login-form label {
+    grid-column: 1 / -1;
+    font-weight: 600;
+}
+
+.login-form select,
+.login-form input[type="text"] {
+    min-width: 0;
+    margin: 0;
+    padding: 8px 10px;
+    font: inherit;
+    background: var(--bg);
+    border: 1px solid var(--muted-darker);
+}
+
+.login-form select {
+    grid-column: 1 / -1;
+}
+
+button.login-submit {
+    width: auto;
+    height: auto;
+    padding: 8px 14px;
+}
+
+.current-identity {
+    display: flex;
+    justify-content: flex-end;
+    align-items: baseline;
+    gap: 10px;
+    margin-top: 24px;
+    color: var(--muted-darker);
+    font-size: 14px;
+}
+
+.current-identity form {
+    margin: 0;
+}
+
+button.logout-button {
+    width: auto;
+    height: auto;
+    padding: 0;
+    color: inherit;
+    background: none;
+    border: 0;
+    text-decoration: underline;
+}
+
+button.logout-button:hover {
+    color: var(--accent);
+    background: none;
+    border: 0;
+}
+
+@media (max-width: 520px) {
+    .login-form {
+        grid-template-columns: 1fr;
+    }
+}
+
 
 
 

@@ -1,6 +1,11 @@
 <?php
 
-function dbConnect() {
+function dbLoadConfig() {
+    static $config = null;
+    if ($config !== null) {
+        return $config;
+    }
+
     $config_path = __DIR__ . '/database_config.php';
     if (!is_file($config_path)) {
         throw new RuntimeException(
@@ -10,9 +15,18 @@ function dbConnect() {
     }
 
     $config = require $config_path;
+    if (!is_array($config)) {
+        throw new RuntimeException('Christmas list configuration must return an array.');
+    }
+
+    return $config;
+}
+
+function dbConnect() {
+    $config = dbLoadConfig();
     $required_keys = array('hostname', 'database', 'username', 'password');
     foreach ($required_keys as $key) {
-        if (!is_array($config) || !isset($config[$key]) || $config[$key] === '') {
+        if (!isset($config[$key]) || $config[$key] === '') {
             throw new RuntimeException('Missing database configuration value: ' . $key);
         }
     }
@@ -23,6 +37,19 @@ function dbConnect() {
     $db_handle->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     return $db_handle;
+}
+
+function dbGetUser($db_handle, $user_id) {
+    $statement = $db_handle->prepare('SELECT user_id, name FROM users WHERE user_id = :user_id');
+    $statement->execute(array(':user_id' => $user_id));
+    $user = $statement->fetch(PDO::FETCH_ASSOC);
+    return $user === false ? null : $user;
+}
+
+function dbGetUsers($db_handle) {
+    $statement = $db_handle->prepare('SELECT user_id, name FROM users ORDER BY name ASC');
+    $statement->execute();
+    return $statement->fetchAll(PDO::FETCH_ASSOC);
 }
 
 function dbDisconnect($db_handle) {
@@ -64,24 +91,24 @@ function dbAddItem($db_handle, $user_id, $item_description) {
     $statement->execute(array(':user_id' => $user_id, ':description' => $item_description));
 }
 
-function dbDeleteItem($db_handle, $item_id) {
-    $statement = $db_handle->prepare("DELETE FROM items WHERE item_id = :item_id");
-    $statement->execute(array(':item_id' => $item_id));
+function dbDeleteItem($db_handle, $user_id, $item_id) {
+    $statement = $db_handle->prepare("DELETE FROM items WHERE item_id = :item_id AND requester_id = :user_id");
+    $statement->execute(array(':item_id' => $item_id, ':user_id' => $user_id));
 }
 
-function dbEditItem($db_handle, $item_id, $item_description) {
-    $statement = $db_handle->prepare("UPDATE items SET description = :description WHERE item_id = :item_id");
-    $statement->execute(array(':item_id' => $item_id, ':description' => $item_description));
+function dbEditItem($db_handle, $user_id, $item_id, $item_description) {
+    $statement = $db_handle->prepare("UPDATE items SET description = :description WHERE item_id = :item_id AND requester_id = :user_id");
+    $statement->execute(array(':item_id' => $item_id, ':user_id' => $user_id, ':description' => $item_description));
 }
 
 function dbMarkBought($db_handle, $user_id, $item_id) {
-    $statement = $db_handle->prepare("UPDATE items SET bought = 1, buyer_id = :buyer_id WHERE item_id = :item_id");
+    $statement = $db_handle->prepare("UPDATE items SET bought = 1, buyer_id = :buyer_id WHERE item_id = :item_id AND requester_id != :buyer_id AND bought = 0");
     $statement->execute(array(':item_id' => $item_id, ':buyer_id' => $user_id));
 }
 
-function dbMarkUnbought($db_handle, $item_id) {
-    $statement = $db_handle->prepare("UPDATE items SET bought = 0, buyer_id = NULL WHERE item_id = :item_id");
-    $statement->execute(array(':item_id' => $item_id));
+function dbMarkUnbought($db_handle, $user_id, $item_id) {
+    $statement = $db_handle->prepare("UPDATE items SET bought = 0, buyer_id = NULL WHERE item_id = :item_id AND buyer_id = :buyer_id");
+    $statement->execute(array(':item_id' => $item_id, ':buyer_id' => $user_id));
 }
 
 ?>
