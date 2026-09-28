@@ -32,7 +32,7 @@ function dbConnect() {
     }
 
     # Connect
-    $dsn = 'mysql:host=' . $config['hostname'] . ';dbname=' . $config['database'];
+    $dsn = 'mysql:host=' . $config['hostname'] . ';dbname=' . $config['database'] . ';charset=utf8mb4';
     $db_handle = new PDO($dsn, $config['username'], $config['password']);
     $db_handle->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
