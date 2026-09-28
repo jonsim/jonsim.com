@@ -14,6 +14,7 @@
     $AUTH_COOKIE_LIFETIME = 60 * 60 * 24 * 365;
     $MAX_LOGIN_FAILURES = 5;
     $LOGIN_LOCK_SECONDS = 5 * 60;
+    $ITEM_DESCRIPTION_MAX_LENGTH = 2000;
 
     # Disable page caching.
     header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
@@ -42,6 +43,25 @@
 
     function normalisePhrase($phrase) {
         return preg_replace('/[^a-z0-9]/', '', strtolower($phrase));
+    }
+
+    function validateItemDescription($value, $max_length, &$error) {
+        if (!is_string($value)) {
+            $error = 'The item description was not valid.';
+            return null;
+        }
+
+        $value = trim($value);
+        if ($value === '') {
+            $error = 'Please enter an item description.';
+            return null;
+        }
+        if (mb_strlen($value, 'UTF-8') > $max_length) {
+            $error = 'Item descriptions must be '.$max_length.' characters or fewer.';
+            return null;
+        }
+
+        return $value;
     }
 
     function createAuthCookie($user_id, $expires, $secret) {
@@ -148,47 +168,85 @@
     }
 
     # Handle POST requests.
-    $did_modify_list = false;
+    $list_error = isset($_SESSION['list_error']) ? $_SESSION['list_error'] : null;
+    unset($_SESSION['list_error']);
+    $did_handle_list_action = false;
 
     # Handle adds
     if (!$show_login && isset($_POST[$ADD_BASE_ID])) {
-        $item_description = $_POST[$ADD_BASE_ID];
-        if ($item_description != null and !empty($item_description)) {
+        $did_handle_list_action = true;
+        $item_description = validateItemDescription(
+            $_POST[$ADD_BASE_ID],
+            $ITEM_DESCRIPTION_MAX_LENGTH,
+            $list_error
+        );
+        if ($item_description !== null) {
             dbAddItem($db_handle, $this_user_id, $item_description);
-            $did_modify_list = true;
         }
     }
     # Handle deletes
     if (!$show_login && isset($_POST[$DELETE_BASE_ID])) {
-        foreach ($_POST[$DELETE_BASE_ID] as $item_id=>$item_data) {
-            dbDeleteItem($db_handle, $this_user_id, $item_id);
-            $did_modify_list = true;
+        $did_handle_list_action = true;
+        if (is_array($_POST[$DELETE_BASE_ID])) {
+            foreach ($_POST[$DELETE_BASE_ID] as $item_id=>$item_data) {
+                if (ctype_digit((string) $item_id)) {
+                    dbDeleteItem($db_handle, $this_user_id, (int) $item_id);
+                }
+            }
+        } else {
+            $list_error = 'The delete request was not valid.';
         }
     }
     # Handle edits
     if (!$show_login && isset($_POST[$EDIT_BASE_ID])) {
-        foreach ($_POST[$EDIT_BASE_ID] as $item_id=>$item_data) {
-            dbEditItem($db_handle, $this_user_id, $item_id, $item_data);
-            $did_modify_list = true;
+        $did_handle_list_action = true;
+        if (is_array($_POST[$EDIT_BASE_ID])) {
+            foreach ($_POST[$EDIT_BASE_ID] as $item_id=>$item_data) {
+                $item_description = validateItemDescription(
+                    $item_data,
+                    $ITEM_DESCRIPTION_MAX_LENGTH,
+                    $list_error
+                );
+                if (ctype_digit((string) $item_id) && $item_description !== null) {
+                    dbEditItem($db_handle, $this_user_id, (int) $item_id, $item_description);
+                }
+            }
+        } else {
+            $list_error = 'The edit request was not valid.';
         }
     }
     # Handle boughts
     if (!$show_login && isset($_POST[$BOUGHT_BASE_ID])) {
-        foreach ($_POST[$BOUGHT_BASE_ID] as $item_id=>$item_data) {
-            dbMarkBought($db_handle, $this_user_id, $item_id);
-            $did_modify_list = true;
+        $did_handle_list_action = true;
+        if (is_array($_POST[$BOUGHT_BASE_ID])) {
+            foreach ($_POST[$BOUGHT_BASE_ID] as $item_id=>$item_data) {
+                if (ctype_digit((string) $item_id)) {
+                    dbMarkBought($db_handle, $this_user_id, (int) $item_id);
+                }
+            }
+        } else {
+            $list_error = 'The bought-item request was not valid.';
         }
     }
     # Handle unboughts
     if (!$show_login && isset($_POST[$UNBOUGHT_BASE_ID])) {
-        foreach ($_POST[$UNBOUGHT_BASE_ID] as $item_id=>$item_data) {
-            dbMarkUnbought($db_handle, $this_user_id, $item_id);
-            $did_modify_list = true;
+        $did_handle_list_action = true;
+        if (is_array($_POST[$UNBOUGHT_BASE_ID])) {
+            foreach ($_POST[$UNBOUGHT_BASE_ID] as $item_id=>$item_data) {
+                if (ctype_digit((string) $item_id)) {
+                    dbMarkUnbought($db_handle, $this_user_id, (int) $item_id);
+                }
+            }
+        } else {
+            $list_error = 'The unbuy request was not valid.';
         }
     }
 
     # Prevent refreshing the page from submitting the same change a second time.
-    if ($did_modify_list) {
+    if ($did_handle_list_action) {
+        if ($list_error !== null) {
+            $_SESSION['list_error'] = $list_error;
+        }
         redirectToList();
     }
 
@@ -252,6 +310,7 @@
         var field = document.createElement("input");
         field.type = "text";
         field.className = "listeditor";
+        field.maxLength = <?php echo $ITEM_DESCRIPTION_MAX_LENGTH; ?>;
         field.id =   editId;
         field.name = editId;
         field.value = item_description;
@@ -280,6 +339,7 @@
         field = document.createElement("input");
         field.type = "text";
         field.className = "listeditor";
+        field.maxLength = <?php echo $ITEM_DESCRIPTION_MAX_LENGTH; ?>;
         field.id   = addId;
         field.name = addId;
         button.parentNode.insertBefore(field, button);
@@ -345,6 +405,10 @@
             echo '<span>Viewing as <strong>'.htmlspecialchars($display_name, ENT_QUOTES, 'UTF-8').'</strong></span>';
             echo '<form method="POST" action="list.php"><button class="logout-button" type="submit" name="logout">Not you?</button></form>';
             echo '</div>';
+
+            if ($list_error !== null) {
+                echo '<p class="list-error" role="alert">'.htmlspecialchars($list_error, ENT_QUOTES, 'UTF-8').'</p>';
+            }
 
             echo '<form id="list_form" method="POST" action="list.php" onsubmit="return beginListSubmission()">';
 

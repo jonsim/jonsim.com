@@ -115,6 +115,14 @@ button.login-submit {
     margin: 0;
 }
 
+.list-error {
+    margin: 20px 0 0;
+    padding: 10px 12px;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+}
+
 button.logout-button {
     width: auto;
     height: auto;
