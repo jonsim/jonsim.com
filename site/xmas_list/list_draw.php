@@ -36,17 +36,15 @@ function drawDescription($item_id, $item_description, $is_this_user, $is_bought)
 
 function drawEditButton($item_id, $item_description) {
     global $EDIT_BASE_ID;
-    # When *inputting* the data into the edit box, we still have to escape html
-    # special characters (this time to prevent " etc escaping their bounds), but
-    # also must escape slashes (to prevent ' escaping their bounds - merely
-    # converting these to escaped html is no good since this will be rendered on
-    # the page in an onclick)!
-    $item_description = addslashes(htmlspecialchars($item_description));
+    # Keep user-provided text out of inline JavaScript. HTML attribute escaping
+    # makes it safe to store in a data attribute; JavaScript reads it as data.
+    $item_description = htmlspecialchars($item_description, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
     $output  = '<button type="button" ';
     $output .=   'title="Edit this entry" ';
     $output .=   'id="'  .formId($EDIT_BASE_ID . '_button', $item_id).'" ';
     $output .=   'name="'.formId($EDIT_BASE_ID . '_button', $item_id).'" ';
-    $output .=   'onclick="editItem('.$item_id.', \''.$item_description.'\')">';
+    $output .=   'data-description="'.$item_description.'" ';
+    $output .=   'onclick="editItem(this, '.$item_id.')">';
     $output .= '<i class="fa fa-pencil fa-fw"></i>';
     $output .= '</button>';
     return $output;

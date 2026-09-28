@@ -194,10 +194,10 @@
   <link rel="stylesheet" type="text/css" href="list_style.css?v=2">
   <script src="https://use.fontawesome.com/141f2d0518.js"></script>
   <script>
-    function editItem(item_id, item_description) {
+    function editItem(button, item_id) {
+      var item_description = button.dataset.description;
       var descId   = <?php echo '"' . formId($DESCRIPTION_BASE_ID,    '" + item_id + "') . '"'; ?>;
       var editId   = <?php echo '"' . formId($EDIT_BASE_ID,           '" + item_id + "') . '"'; ?>;
-      var buttonId = <?php echo '"' . formId($EDIT_BASE_ID.'_button', '" + item_id + "') . '"'; ?>;
       var desc = document.getElementById(descId);
 
       if (desc) {
@@ -210,7 +210,6 @@
         field.value = item_description;
         desc.parentNode.replaceChild(field, desc);
         // Update edit button.
-        var button = document.getElementById(buttonId);
         button.innerHTML = '<i class="fa fa-arrow-right fa-fw"></i>';
         // Finally give the new field focus.
         field.focus();
