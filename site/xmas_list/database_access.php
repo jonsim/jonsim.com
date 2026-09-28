@@ -72,18 +72,36 @@ function dbValidateUser($db_handle, $user_name) {
 }
 
 function dbGetAllUsersItems($db_handle) {
-    $users_statement = $db_handle->prepare("SELECT users.user_id, users.name FROM users ORDER BY users.name ASC");
-    $users_statement->execute();
-    $users_rows = $users_statement->fetchAll(PDO::FETCH_ASSOC);
+    $statement = $db_handle->prepare(
+        'SELECT users.user_id, users.name, items.item_id, items.description, items.bought, items.buyer_id ' .
+        'FROM users ' .
+        'LEFT JOIN items ON items.requester_id = users.user_id ' .
+        'ORDER BY users.name ASC, items.item_id ASC'
+    );
+    $statement->execute();
 
-    // TODO: Optimise - we only need 1 query, not n+1...
-    for ($i = 0; $i < count($users_rows); $i++)
-    {
-        $items_statement = $db_handle->prepare("SELECT items.item_id, items.description, items.bought, items.buyer_id FROM items WHERE items.requester_id = :user_id ORDER BY items.item_id ASC");
-        $items_statement->execute(array(':user_id' => $users_rows[$i]['user_id']));
-        $users_rows[$i]['items'] = $items_statement->fetchAll(PDO::FETCH_ASSOC);
+    $users = array();
+    foreach ($statement->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        $user_id = (int) $row['user_id'];
+        if (!isset($users[$user_id])) {
+            $users[$user_id] = array(
+                'user_id' => $user_id,
+                'name' => $row['name'],
+                'items' => array()
+            );
+        }
+
+        if ($row['item_id'] !== null) {
+            $users[$user_id]['items'][] = array(
+                'item_id' => $row['item_id'],
+                'description' => $row['description'],
+                'bought' => $row['bought'],
+                'buyer_id' => $row['buyer_id']
+            );
+        }
     }
-    return $users_rows;
+
+    return array_values($users);
 }
 
 function dbAddItem($db_handle, $user_id, $item_description) {
