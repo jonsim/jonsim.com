@@ -221,6 +221,26 @@
   <link rel="stylesheet" type="text/css" href="list_style.css?v=2">
   <script src="https://use.fontawesome.com/141f2d0518.js"></script>
   <script>
+    var listFormSubmitting = false;
+
+    function beginListSubmission() {
+      if (listFormSubmitting) {
+        return false;
+      }
+
+      listFormSubmitting = true;
+      var form = document.getElementById("list_form");
+      form.classList.add("is-submitting");
+      form.setAttribute("aria-busy", "true");
+      return true;
+    }
+
+    function submitListForm() {
+      if (beginListSubmission()) {
+        document.getElementById("list_form").submit();
+      }
+    }
+
     function editItem(button, item_id) {
       var item_description = button.dataset.description;
       var descId   = <?php echo '"' . formId($DESCRIPTION_BASE_ID,    '" + item_id + "') . '"'; ?>;
@@ -242,7 +262,7 @@
         field.focus();
       } else {
         // Already in edit mode, just submit the form as requested.
-        document.getElementById("list_form").submit();
+        submitListForm();
       }
     }
 
@@ -253,7 +273,7 @@
 
       if (field) {
         // Already in add mode, just submit the form as requested.
-        document.getElementById("list_form").submit();
+        submitListForm();
       } else {
         // Not in add mode - create add field.
         var button = document.getElementById(buttonId);
@@ -326,7 +346,7 @@
             echo '<form method="POST" action="list.php"><button class="logout-button" type="submit" name="logout">Not you?</button></form>';
             echo '</div>';
 
-            echo '<form id="list_form" method="POST" action="list.php">';
+            echo '<form id="list_form" method="POST" action="list.php" onsubmit="return beginListSubmission()">';
 
             # Add a hidden default button. This prevents accidentally performing
             # random actions when pressing CR on some browsers which interpret CR as

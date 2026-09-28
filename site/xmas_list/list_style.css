@@ -211,6 +211,11 @@ button#form_default
     display: block !important;
 }
 
+#list_form.is-submitting button {
+    pointer-events: none;
+    opacity: .6;
+}
+
 /* Form input text config */
 input[type="text"], input[type="password"]
 {
