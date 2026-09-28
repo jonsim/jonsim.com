@@ -121,36 +121,48 @@
     }
 
     # Handle POST requests.
+    $did_modify_list = false;
+
     # Handle adds
     if (!$show_login && isset($_POST[$ADD_BASE_ID])) {
         $item_description = $_POST[$ADD_BASE_ID];
         if ($item_description != null and !empty($item_description)) {
             dbAddItem($db_handle, $this_user_id, $item_description);
+            $did_modify_list = true;
         }
     }
     # Handle deletes
     if (!$show_login && isset($_POST[$DELETE_BASE_ID])) {
         foreach ($_POST[$DELETE_BASE_ID] as $item_id=>$item_data) {
             dbDeleteItem($db_handle, $this_user_id, $item_id);
+            $did_modify_list = true;
         }
     }
     # Handle edits
     if (!$show_login && isset($_POST[$EDIT_BASE_ID])) {
         foreach ($_POST[$EDIT_BASE_ID] as $item_id=>$item_data) {
             dbEditItem($db_handle, $this_user_id, $item_id, $item_data);
+            $did_modify_list = true;
         }
     }
     # Handle boughts
     if (!$show_login && isset($_POST[$BOUGHT_BASE_ID])) {
         foreach ($_POST[$BOUGHT_BASE_ID] as $item_id=>$item_data) {
             dbMarkBought($db_handle, $this_user_id, $item_id);
+            $did_modify_list = true;
         }
     }
     # Handle unboughts
     if (!$show_login && isset($_POST[$UNBOUGHT_BASE_ID])) {
         foreach ($_POST[$UNBOUGHT_BASE_ID] as $item_id=>$item_data) {
             dbMarkUnbought($db_handle, $this_user_id, $item_id);
+            $did_modify_list = true;
         }
+    }
+
+    # Prevent refreshing the page from submitting the same change a second time.
+    if ($did_modify_list) {
+        redirectToList();
     }
 
     if ($show_login) {
