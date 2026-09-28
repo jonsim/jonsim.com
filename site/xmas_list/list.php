@@ -305,6 +305,11 @@
       }
 
       listFormSubmitting = true;
+      try {
+        sessionStorage.setItem("xmasListScrollY", String(window.scrollY));
+      } catch (error) {
+        // Submission should still work if browser storage is unavailable.
+      }
       var form = document.getElementById("list_form");
       form.classList.add("is-submitting");
       form.setAttribute("aria-busy", "true");
@@ -367,6 +372,32 @@
         field.focus();
       }
     }
+
+    window.addEventListener("load", function () {
+      var savedScrollY;
+      try {
+        savedScrollY = sessionStorage.getItem("xmasListScrollY");
+        sessionStorage.removeItem("xmasListScrollY");
+      } catch (error) {
+        return;
+      }
+
+      if (savedScrollY === null) {
+        return;
+      }
+
+      var scrollY = Number(savedScrollY);
+      if (!Number.isFinite(scrollY)) {
+        return;
+      }
+
+      // Wait for the freshly rendered page to complete its initial layout.
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          window.scrollTo(0, scrollY);
+        });
+      });
+    });
   </script>
 </head>
 
