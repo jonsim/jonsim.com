@@ -64,24 +64,31 @@
         return $value;
     }
 
-    function createAuthCookie($user_id, $expires, $secret) {
-        $payload = $user_id . '|' . $expires;
+    function authPhraseFingerprint($phrase_hash) {
+        return substr(hash('sha256', $phrase_hash), 0, 32);
+    }
+
+    function createAuthCookie($user_id, $expires, $secret, $phrase_hash) {
+        $payload = $user_id . '|' . $expires . '|' . authPhraseFingerprint($phrase_hash);
         return $payload . '|' . hash_hmac('sha256', $payload, $secret);
     }
 
     function readAuthCookie($cookie, $secret) {
         $parts = explode('|', $cookie);
-        if (count($parts) !== 3 || !ctype_digit($parts[0]) || !ctype_digit($parts[1])) {
+        if (count($parts) !== 4 || !ctype_digit($parts[0]) || !ctype_digit($parts[1])) {
             return null;
         }
 
-        $payload = $parts[0] . '|' . $parts[1];
+        $payload = $parts[0] . '|' . $parts[1] . '|' . $parts[2];
         $expected_signature = hash_hmac('sha256', $payload, $secret);
-        if ((int) $parts[1] < time() || !hash_equals($expected_signature, $parts[2])) {
+        if ((int) $parts[1] < time() || !hash_equals($expected_signature, $parts[3])) {
             return null;
         }
 
-        return (int) $parts[0];
+        return array(
+            'user_id' => (int) $parts[0],
+            'phrase_fingerprint' => $parts[2]
+        );
     }
 
     session_set_cookie_params(array(
@@ -106,11 +113,17 @@
 
     $this_user = null;
     if (isset($_COOKIE[$AUTH_COOKIE])) {
-        $cookie_user_id = readAuthCookie($_COOKIE[$AUTH_COOKIE], $config['auth_cookie_secret']);
-        if ($cookie_user_id !== null) {
-            $cookie_user = dbGetUser($db_handle, $cookie_user_id);
+        $cookie_auth = readAuthCookie($_COOKIE[$AUTH_COOKIE], $config['auth_cookie_secret']);
+        if ($cookie_auth !== null) {
+            $cookie_user = dbGetUser($db_handle, $cookie_auth['user_id']);
             if ($cookie_user !== null && isset($config['auth_users'][$cookie_user['name']])) {
-                $this_user = $cookie_user;
+                $cookie_auth_user = $config['auth_users'][$cookie_user['name']];
+                $expected_fingerprint = isset($cookie_auth_user['phrase_hash'])
+                    ? authPhraseFingerprint($cookie_auth_user['phrase_hash'])
+                    : '';
+                if (hash_equals($expected_fingerprint, $cookie_auth['phrase_fingerprint'])) {
+                    $this_user = $cookie_user;
+                }
             }
         }
     }
@@ -141,7 +154,12 @@
                     $expires = time() + $AUTH_COOKIE_LIFETIME;
                     setAuthCookie(
                         $AUTH_COOKIE,
-                        createAuthCookie($login_user_id, $expires, $config['auth_cookie_secret']),
+                        createAuthCookie(
+                            $login_user_id,
+                            $expires,
+                            $config['auth_cookie_secret'],
+                            $auth_user['phrase_hash']
+                        ),
                         $expires
                     );
                     redirectToList();
