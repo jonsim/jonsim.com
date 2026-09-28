@@ -386,7 +386,7 @@
   <main class="wrap">
     <section class="list-hero">
       <div class="list-hero-header">
-        <h1>Simmonds Christmas List <span>2026</span></h1>
+        <h1>Simmonds Christmas List <span><?php echo date('Y'); ?></span></h1>
       </div>
     </section>
     <div class="hero-rule"></div>
